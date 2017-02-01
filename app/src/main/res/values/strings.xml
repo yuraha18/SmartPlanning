@@ -1,3 +1,18 @@
 <resources>
-    <string name="app_name">SmartPlanning</string>
+    <string name="app_name">SPlanning Beta</string>
+
+    <string name="navigation_drawer_open">Відкрите навігаційне меню</string>
+    <string name="navigation_drawer_close">Закрите навігаційне меню</string>
+
+    <string name="action_settings">Налаштування</string>
+    <string name="action_buy_premium">Отримати преміум</string>
+    <string name="action_help">Допомога</string>
+    <string name="search_hint">Пошук</string>
+    
+    <string name="nav_statistic">Моя статистика</string>
+    <string name="nav_goals">Мої цілі</string>
+    <string name="nav_history">Історія</string>
+    <string name="nav_about_us">Про нас</string>
+
+    <string name="account_email">yura.yush@gmail.com</string>
 </resources>

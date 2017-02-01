@@ -3,4 +3,8 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="navigationDrawerBackground">#e3ecf5</color>
+    <color name="navigationDrawerEmailColor">#686c70</color>
+    <color name="fabBackgroundColor">#1565c0</color>
 </resources>

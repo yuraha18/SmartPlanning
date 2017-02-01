@@ -1,4 +1,4 @@
-package com.eplan.yuraha.smartplanning;
+package com.eplan.yuraha.easyplanning;
 
 import org.junit.Test;
 

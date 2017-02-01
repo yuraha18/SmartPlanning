@@ -1,4 +1,4 @@
-package com.eplan.yuraha.smartplanning;
+package com.eplan.yuraha.easyplanning;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.eplan.yuraha.smartplanning", appContext.getPackageName());
+        assertEquals("com.eplan.yuraha.easyplanning", appContext.getPackageName());
     }
 }
