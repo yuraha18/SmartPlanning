@@ -6,4 +6,18 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <!-- Screen margins for Task Fragment -->
+    <dimen name="priority_bell_left_margin">16dp</dimen>
+    <dimen name="margin_top_bottom_fragment">10dp</dimen>
+    <dimen name="fragment_more_width">20dp</dimen>
+    <dimen name="fragment_goal_margin">10dp</dimen>
+    <dimen name="fragment_goal_padding">5dp</dimen>
+    <dimen name="marginTop_between_Fragments">10dp</dimen>
+    <!-- Screen margins for Subtitle -->
+    <dimen name="marginTop_subtitle">3dp</dimen>
+    <dimen name="marginBottom_subtitle">10dp</dimen>
+    <dimen name="subtitle_padding">16dp</dimen>
+    <dimen name="ratingBar_margin">8dp</dimen>
+
+
 </resources>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/subtitle_padding"
+    android:paddingRight="@dimen/subtitle_padding"
+    android:id="@+id/layout">
+
+    <Spinner
+        android:id="@+id/day_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
+    <RatingBar
+        android:id="@+id/ratingBar_small"
+        android:layout_marginBottom="@dimen/ratingBar_margin"
+        style="?android:attr/ratingBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:stepSize="0.5"
+        android:rating="2.5"
+android:layout_alignRight="@id/layout"
+        android:layout_alignBottom="@+id/day_spinner"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+       />
+</RelativeLayout>

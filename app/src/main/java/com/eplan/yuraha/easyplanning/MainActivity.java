@@ -1,8 +1,11 @@
 package com.eplan.yuraha.easyplanning;
 
+
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.PopupMenu;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +15,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+
+import android.widget.ImageView;
+
+import android.widget.Spinner;
+
+
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        TaskFragment.OnFragmentInteractionListener,
+        PopupMenu.OnMenuItemClickListener{
+
+    Spinner materialBetterSpinner ;
+
+    String[] SPINNER_DATA = {"Завдання на сьогодні","Завдання на завтра","Вибрати день"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +56,58 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        ImageView popupButton = (ImageView) findViewById(R.id.action_more_fragment);
+            // Ставим на неё "слушатель клика"
+            popupButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    showPopupMenu(v);
+                }
+            });
+
+        materialBetterSpinner = (Spinner)findViewById(R.id.day_spinner);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.spinner_item, SPINNER_DATA);
+        materialBetterSpinner.setAdapter(adapter);
+
+    }
+
+
+    public void showPopupMenu(View v) {
+        try {
+            PopupMenu popup = new PopupMenu(this, v);
+            popup.setOnMenuItemClickListener(this);
+
+            // Ссылка на файл res/menu/popup_menu.xml
+            popup.inflate(R.menu.task_fragment_menu);
+            popup.show();
+        }
+        catch (Exception e)
+        {
+
+        }
+
+    }
+
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        try {
+            switch (item.getItemId()) {
+                //Если выбран пункт меню "В документах"
+                case R.id.action_settings:
+                    // Вызываем наш "демо-метод" (см. п. 6)... и т.д.
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        catch ( Exception e)
+        {
+            return false;
+        }
+
     }
 
     @Override
@@ -56,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
     }
 
@@ -96,4 +165,10 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
 }

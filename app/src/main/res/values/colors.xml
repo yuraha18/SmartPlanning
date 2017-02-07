@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#3f51b5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="mainActivityBackground">#eeeeee</color>
 
+    <!-- Colors for Navigation Drawer-->
     <color name="navigationDrawerBackground">#e3ecf5</color>
     <color name="navigationDrawerEmailColor">#686c70</color>
     <color name="fabBackgroundColor">#1565c0</color>
+
+    <!-- Colors for Task Fragment-->
+    <color name="moreOnPressed">#6270bb</color>
+    <color name="fragmentBackground">#ffffff</color>
+    <color name="textViewColor">#90CAF9</color>
+
+    <color name="subtitleColor">#2b2e32</color>
+
+
 </resources>
