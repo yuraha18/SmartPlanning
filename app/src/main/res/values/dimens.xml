@@ -12,12 +12,17 @@
     <dimen name="fragment_more_width">20dp</dimen>
     <dimen name="fragment_goal_margin">10dp</dimen>
     <dimen name="fragment_goal_padding">5dp</dimen>
+    <dimen name="fragment_minHeight">85dp</dimen>
+    <dimen name="fragment_goal_marginBottom">10dp</dimen>
     <dimen name="marginTop_between_Fragments">10dp</dimen>
     <!-- Screen margins for Subtitle -->
     <dimen name="marginTop_subtitle">3dp</dimen>
-    <dimen name="marginBottom_subtitle">10dp</dimen>
+    <dimen name="marginBottom_subtitle">5dp</dimen>
     <dimen name="subtitle_padding">16dp</dimen>
     <dimen name="ratingBar_margin">8dp</dimen>
+    <!-- Screen margins for AppBarMain -->
+    <dimen name="paddingTop_AppBarMain">60dp</dimen>
+    <dimen name="paddingLeft_fragmentTask_in_MA">16dp</dimen>
 
 
 </resources>
