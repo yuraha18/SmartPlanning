@@ -1,0 +1,109 @@
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="20dp"
+    android:id="@+id/toggle_button_layout"
+    >
+
+    <!-- ToogleMonday -->
+    <ToggleButton
+        android:textOn="@string/monday"
+        android:textOff="@string/monday"
+        android:id="@+id/toggleMonday"
+        android:textSize="20sp"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+
+        android:background="@drawable/toggle_selector"/>
+
+    <!-- ToogleTuesday -->
+    <ToggleButton
+        android:textOn="@string/tuesday"
+        android:textOff="@string/tuesday"
+        android:id="@+id/toggleTuesday"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/toggleMonday"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/toggle_selector"/>
+
+    <!-- ToogleWednesday -->
+    <ToggleButton
+        android:textOn="@string/wednesday"
+        android:textOff="@string/wednesday"
+        android:id="@+id/toggleWednesday"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/toggleTuesday"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/toggle_selector"/>
+
+    <!-- ToogleThursday -->
+    <ToggleButton
+        android:textOn="@string/thursday"
+        android:textOff="@string/thursday"
+        android:id="@+id/toggleThursday"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/toggleWednesday"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/toggle_selector"/>
+
+    <!-- ToogleFriday -->
+    <ToggleButton
+        android:textOn="@string/friday"
+        android:textOff="@string/friday"
+        android:id="@+id/toggleFriday"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/toggleThursday"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/toggle_selector"/>
+
+    <!-- ToogleSaturday -->
+    <ToggleButton
+        android:textOn="@string/saturday"
+        android:textOff="@string/saturday"
+        android:id="@+id/toggleSaturday"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/toggleFriday"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/toggle_selector"/>
+
+    <!-- ToogleSunday -->
+    <ToggleButton
+        android:textOn="@string/sunday"
+        android:textOff="@string/sunday"
+        android:id="@+id/toggleSunday"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/toggleSaturday"
+        android:textColor="#eeeeee"
+        app:layout_widthPercent="10%"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/toggle_selector"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_calendar"
+        android:layout_toRightOf="@+id/toggleSunday"
+        android:layout_toEndOf="@+id/toggleSunday"
+        android:id="@+id/imageButton" />
+
+
+</android.support.percent.PercentRelativeLayout>

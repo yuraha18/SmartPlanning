@@ -1,0 +1,88 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddTaskFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:hint="Name"
+        android:ems="20"
+        android:layout_marginTop="48dp"
+        android:id="@+id/taskName" />
+
+    <Spinner
+        android:id="@+id/set_priority_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/taskName"
+        />
+
+    <include layout="@layout/toggle_button_layout"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/toggleLayout"
+        android:layout_marginTop="138dp"/>
+
+    <CheckBox
+        android:text="CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/setGoalsButton"
+        android:layout_alignEnd="@+id/setGoalsButton"
+        android:layout_marginRight="11dp"
+        android:layout_below="@id/toggleLayout"
+        android:layout_marginEnd="11dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/repeatEveryWeekCheckBox" />
+
+    <Button
+        android:text="Прикріпити цілі"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/repeatEveryWeekCheckBox"
+        android:id="@+id/setGoalsButton"
+        />
+
+    <Button
+        android:text="Встановити час"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/setGoalsButton"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="12dp"
+        android:id="@+id/setRememberTime"
+        />
+
+
+    <Button
+        android:text="Мелодія"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/setRememberTime"
+        android:layout_alignLeft="@+id/setGoalsButton"
+        android:layout_alignStart="@+id/setGoalsButton"
+        android:layout_marginTop="22dp"
+        android:id="@+id/buttonSetTone" />
+
+    <Button
+        android:text="Готово"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="50dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="49dp"
+        android:id="@+id/sendDataForAddTask"
+        android:background="@color/colorPrimary"
+        />
+
+
+</RelativeLayout>

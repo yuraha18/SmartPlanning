@@ -23,7 +23,17 @@
         <item>Відкрити календар</item>
     </string-array>
 
+    <!-- Day name for DayToogleButtons  -->
+    <string name="monday">П</string>
+    <string name="tuesday">В</string>
+    <string name="wednesday">С</string>
+    <string name="thursday">Ч</string>
+    <string name="friday">П</string>
+    <string name="saturday">С</string>
+    <string name="sunday">Н</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="tones_dialog_frag_title">Оберіть мелодію</string>
+    <string name="goals_dialog_frag_tones">Виберіть цілі</string>
 </resources>

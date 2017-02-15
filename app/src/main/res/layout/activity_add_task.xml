@@ -13,6 +13,15 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Hi"/>
+        android:text="Hi"
+        android:id="@+id/test"/>
+
+
+    <fragment
+        android:id="@+id/addTaskFragment"
+        class="com.eplan.yuraha.easyplanning.AddTaskFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout="@layout/fragment_add_task" />
 
 </RelativeLayout>

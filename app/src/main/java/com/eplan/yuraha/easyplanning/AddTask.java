@@ -2,14 +2,22 @@ package com.eplan.yuraha.easyplanning;
 
 import android.content.Context;
 
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
-public class AddTask extends BaseActivity {
+public class AddTask extends BaseActivity
+implements AddTaskFragment.OnFragmentInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +38,10 @@ public class AddTask extends BaseActivity {
         View contentView = inflater.inflate(R.layout.activity_add_task, null, false);
         drawer.addView(contentView, 0);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+      //
+
+
     }
 
     @Override
@@ -51,5 +63,10 @@ public class AddTask extends BaseActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }
