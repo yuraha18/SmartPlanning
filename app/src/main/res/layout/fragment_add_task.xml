@@ -8,11 +8,13 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:inputType="textMultiLine"
         android:hint="Name"
+        android:minLines="2"
         android:ems="20"
         android:layout_marginTop="48dp"
-        android:id="@+id/taskName" />
+        android:id="@+id/taskName"
+        android:scrollbars="vertical"/>
 
     <Spinner
         android:id="@+id/set_priority_spinner"
@@ -28,7 +30,7 @@
         android:layout_marginTop="138dp"/>
 
     <CheckBox
-        android:text="CheckBox"
+        android:text="Повторювати щотижня"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/setGoalsButton"
@@ -74,15 +76,22 @@
         android:text="Готово"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="50dp"
-        android:layout_marginEnd="50dp"
-        android:layout_marginBottom="49dp"
         android:id="@+id/sendDataForAddTask"
         android:background="@color/colorPrimary"
-        />
+        android:layout_below="@+id/buttonSetTone"
+        android:layout_toRightOf="@+id/buttonSetTone"
+        android:layout_toEndOf="@+id/buttonSetTone"
+        android:layout_marginLeft="32dp"
+        android:layout_marginStart="32dp" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/exampleText"
+        android:layout_above="@+id/setRememberTime"
+        android:layout_marginLeft="20dp"
+     android:layout_toRightOf="@id/setGoalsButton" />
 
 
 </RelativeLayout>

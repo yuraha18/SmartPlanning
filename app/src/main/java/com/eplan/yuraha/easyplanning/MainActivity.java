@@ -3,6 +3,8 @@ package com.eplan.yuraha.easyplanning;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -26,7 +28,9 @@ import android.widget.ImageView;
 
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
+import java.io.File;
 
 
 public class MainActivity extends BaseActivity implements
@@ -76,7 +80,10 @@ public class MainActivity extends BaseActivity implements
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.spinner_item, SPINNER_DATA);
         materialBetterSpinner.setAdapter(adapter);
 
+
+
     }
+
 
 
     public void showPopupMenu(View v) {

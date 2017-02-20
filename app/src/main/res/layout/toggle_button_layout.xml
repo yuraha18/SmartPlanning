@@ -2,6 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_above="@id/repeatEveryWeekCheckBox"
     android:layout_marginTop="20dp"
     android:id="@+id/toggle_button_layout"
     >
@@ -103,7 +104,7 @@
         app:srcCompat="@drawable/ic_calendar"
         android:layout_toRightOf="@+id/toggleSunday"
         android:layout_toEndOf="@+id/toggleSunday"
-        android:id="@+id/imageButton" />
+        android:id="@+id/buttonOpenCalendar" />
 
 
 </android.support.percent.PercentRelativeLayout>

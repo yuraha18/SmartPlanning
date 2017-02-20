@@ -32,8 +32,25 @@
     <string name="saturday">С</string>
     <string name="sunday">Н</string>
 
+    <!-- TaskText validation errors-->
+    <string name="shortLengthError">Мінімум 5 символів</string>
+    <string name="longLengthError">Задовгий текст</string>
+
+    <!-- Task priority values-->
+    <string name="lowPriority">Низький пріоритет</string>
+    <string name="middlePriority">Середній пріоритет</string>
+    <string name="highPriority">Високий пріоритет</string>
+
+
+    <!-- Exceptions values -->
+    <string name="cantParseDataFromViewsException">Помилка зчитування даних</string>
+    <string name="taskAlreadyExistsInDB">Таке завдання вже є в цей день</string>
+    <string name="taskNotAddedInDB">Помилка додавання даних в БД</string>
+
+    <string name="taskAddSuccessfully">Завдання успішно додано</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>
     <string name="goals_dialog_frag_tones">Виберіть цілі</string>
+
 </resources>
