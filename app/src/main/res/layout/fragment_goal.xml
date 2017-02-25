@@ -1,0 +1,57 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/fragmentBackground"
+    tools:context="com.eplan.yuraha.easyplanning.GoalFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:id="@+id/goalName"
+        android:textSize="12sp"
+        android:layout_marginLeft="@dimen/priority_bell_left_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/goalNote"
+        android:textSize="10sp"
+        android:layout_below="@id/goalName"
+        android:layout_width="wrap_content"
+        android:textColor="@color/goalNoteColor"
+
+        android:textStyle="italic"
+        android:layout_marginLeft="@dimen/priority_bell_left_margin"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/goalDeadline"
+        android:layout_below="@id/goalNote"
+        android:layout_width="wrap_content"
+        android:layout_marginLeft="@dimen/priority_bell_left_margin"
+        android:textColor="@color/lowPriority"
+        android:layout_height="wrap_content"
+        android:text="@string/timeToDeadline" />
+
+    <TextView
+        android:id="@+id/goalDeadlineDaysCount"
+        android:layout_toRightOf="@id/goalDeadline"
+        android:layout_toEndOf="@id/goalDeadline"
+        android:textColor="@color/lowPriority"
+        android:layout_below="@id/goalNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/action_more_fragment"
+        android:src="@drawable/ic_more_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+
+        android:clickable="true"
+        android:background="@drawable/pressed_imageview_fragment_task"
+         />
+
+</RelativeLayout>

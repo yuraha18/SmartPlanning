@@ -17,5 +17,17 @@
 
     <color name="subtitleColor">#2b2e32</color>
 
+    <!-- Colors for priorityBell -->
+    <color name="highPriority">#f50404</color>
+    <color name="middlePriority">#f5e504</color>
+    <color name="lowPriority">#18f504</color>
+
+
+    <!-- Colors for tabs in GoalActivity -->
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="windowBackground">#FFFFFF</color>
+    <color name="navigationBarColor">#000000</color>
+
+    <color name="goalNoteColor">#9E9E9E</color>
 
 </resources>

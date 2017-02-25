@@ -1,4 +1,4 @@
-package com.eplan.yuraha.easyplanning;
+package com.eplan.yuraha.easyplanning.DBClasses;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -33,7 +33,7 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "TASK_ID INTEGER);");
 
         /* Save id's all notDoneTasks*/
-        db.execSQL("CREATE TABLE NotDoneTasks ("
+        db.execSQL("CREATE TABLE InProgressTasks ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER);");
 
@@ -56,9 +56,18 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "GOAL_TEXT TEXT, "
                 + "NOTICE TEXT, "
-                + "DEADLINE INTEGER, "
-                + "IS_DONE INTEGER, "
-                + "WEIGHT INTEGER);");
+                + "DEADLINE INTEGER);");
+
+           /* Save id's all doneGoals*/
+        db.execSQL("CREATE TABLE DoneGoals ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "GOAL_ID INTEGER, "
+                + "DAY_ID INTEGER);");
+
+        /* Save id's all goals in progress*/
+        db.execSQL("CREATE TABLE InProgressGoals ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "GOAL_ID INTEGER);");
 
           /* This one connecting tasks with goals*/
         db.execSQL("CREATE TABLE TaskToGoal("

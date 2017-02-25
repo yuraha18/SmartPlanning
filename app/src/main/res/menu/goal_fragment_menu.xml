@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/goal_is_Done"
+        android:orderInCategory="100"
+        android:title="@string/goalIsDane"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/edit_goal"
+        android:orderInCategory="100"
+        android:title="@string/editGoal"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/delete_goal"
+        android:orderInCategory="100"
+        android:title="@string/deleteGoal"
+        app:showAsAction="never"/>
+</menu>

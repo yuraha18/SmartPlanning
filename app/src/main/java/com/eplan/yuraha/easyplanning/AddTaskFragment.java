@@ -2,24 +2,15 @@ package com.eplan.yuraha.easyplanning;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
-import android.text.Editable;
-import android.text.format.DateFormat;
 
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,24 +21,18 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import java.io.File;
+import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
+import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
+
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 
 
 /**
@@ -84,7 +69,7 @@ public class AddTaskFragment extends Fragment {
 
     private String[] weekDays = new String[]{"","Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };// In android weeks start in Sunday
 
-    private int mYear, mMonth, mDay, mHour, mMinute;// variables for TimePicker, keeps current time
+    private int mHour, mMinute;// variables for TimePicker, keeps current time
     protected ArrayList<ToggleButton> toggleButtons;
 
     private ArrayList<CharSequence> allGoals = new ArrayList<>();
@@ -303,7 +288,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
     private boolean getTaskDataFromViews() {
 
         taskText = (EditText) view.findViewById(R.id.taskName);
-        if (!taskTextValidator(taskText.getText()))
+        if (!taskTextValidator(taskText, getContext()))
             return false;
 
         try {
@@ -414,15 +399,16 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
     }
 
 
-    private boolean taskTextValidator(Editable text) {
+    protected static boolean taskTextValidator(EditText taskText, Context context) {
+        String text = taskText.getText().toString();
         if (text.length() < 5)
         {
-            taskText.setError(getContext().getResources().getString(R.string.shortLengthError));
+            taskText.setError(context.getResources().getString(R.string.shortLengthError));
             return false;
         }
         if (text.length() > 250)
         {
-            taskText.setError(getContext().getResources().getString(R.string.longLengthError));
+            taskText.setError(context.getResources().getString(R.string.longLengthError));
             return false;
         }
 
@@ -440,11 +426,12 @@ private void setToneOnClick(View v)
 
 }
 
-    private void openCalendarOnClick(View v) {
+
+    private   void openCalendarOnClick(View v) {
         final Calendar calendar = Calendar.getInstance();
-        mYear = calendar.get(Calendar.YEAR);
-        mMonth = calendar.get(Calendar.MONTH);
-        mDay = calendar.get(Calendar.DAY_OF_MONTH);
+       int mYear = calendar.get(Calendar.YEAR);
+       int mMonth = calendar.get(Calendar.MONTH);
+       int mDay = calendar.get(Calendar.DAY_OF_MONTH);
 
         // Launch Date Picker Dialog
         DatePickerDialog dpd = new DatePickerDialog(getActivity(),
@@ -460,6 +447,7 @@ private void setToneOnClick(View v)
                     }
                 }, mYear, mMonth, mDay);
         dpd.show();
+
     }
 
     /* Remember.OnClickListener call this method for creating TimePickerDialog class*/

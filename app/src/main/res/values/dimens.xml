@@ -24,5 +24,11 @@
     <dimen name="paddingTop_AppBarMain">60dp</dimen>
     <dimen name="paddingLeft_fragmentTask_in_MA">16dp</dimen>
 
+    <!-- Default screen margins for tabs -->
+    <dimen name="tab_max_width">264dp</dimen>
+    <dimen name="tab_padding_bottom">16dp</dimen>
+    <dimen name="tab_label">14sp</dimen>
+    <dimen name="custom_tab_layout_height">72dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 
 </resources>

@@ -11,6 +11,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,19 @@ public class MainActivity extends BaseActivity implements
         View contentView = inflater.inflate(R.layout.activity_main, null, false);
         drawer.addView(contentView, 0);
 
+
+        // Begin the transaction
+       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        TaskFragment taskFragment = new TaskFragment();//create new fragment
+        Bundle bundle = new Bundle();
+        bundle.putString("id", "1");//create data for sending with fragment
+        taskFragment.setArguments(bundle);// sending is
+        ft.replace(R.id.taskFragments, taskFragment);
+
+// or ft.add(R.id.your_placeholder, new FooFragment());
+// Complete the changes added above
+        ft.commit();
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,13 +81,7 @@ public class MainActivity extends BaseActivity implements
 
 
 
-      ImageView popupButton = (ImageView) findViewById(R.id.action_more_fragment);
-            // Ставим на неё "слушатель клика"
-            popupButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    showPopupMenu(v);
-                }
-            });
+
 
         materialBetterSpinner = (Spinner)findViewById(R.id.day_spinner);
 
@@ -84,23 +92,6 @@ public class MainActivity extends BaseActivity implements
 
     }
 
-
-
-    public void showPopupMenu(View v) {
-        try {
-            PopupMenu popup = new PopupMenu(this, v);
-            popup.setOnMenuItemClickListener(this);
-
-            // Ссылка на файл res/menu/popup_menu.xml
-            popup.inflate(R.menu.task_fragment_menu);
-            popup.show();
-        }
-        catch (Exception e)
-        {
-
-        }
-
-    }
 
 
     @Override

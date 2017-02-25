@@ -23,22 +23,19 @@
         />
 
 
-    <fragment
-        android:id="@+id/taskFragment"
-        class="com.eplan.yuraha.easyplanning.TaskFragment"
+    <FrameLayout
+        android:id="@+id/taskFragments"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:layout_below="@id/subtitle"
-        tools:layout="@layout/fragment_task" />
+        android:layout_height="wrap_content">
+    </FrameLayout>
 
-    <fragment
-        android:layout_marginTop="@dimen/marginTop_between_Fragments"
-        android:id="@+id/taskFragment2"
-        class="com.eplan.yuraha.easyplanning.TaskFragment"
+    <FrameLayout
+        android:id="@+id/goalsFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/taskFragment"
-        tools:layout="@layout/fragment_task" />
+        android:layout_height="wrap_content">
+    </FrameLayout>
+
 
 
 

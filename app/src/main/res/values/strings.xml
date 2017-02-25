@@ -42,15 +42,60 @@
     <string name="highPriority">Високий пріоритет</string>
 
 
-    <!-- Exceptions values -->
+    <!-- Exception values -->
     <string name="cantParseDataFromViewsException">Помилка зчитування даних</string>
     <string name="taskAlreadyExistsInDB">Таке завдання вже є в цей день</string>
     <string name="taskNotAddedInDB">Помилка додавання даних в БД</string>
+    <string name="dontSetDeadline">Ви не встановили дату дедлайну</string>
+    <string name="sameGoalExists">Така ціль вже є</string>
+    <string name="cantDeleteGoalException">Проблема з видаленнням цілі. Спробуйте пізніше</string>
 
     <string name="taskAddSuccessfully">Завдання успішно додано</string>
+    <string name="goalAddSuccessfully">Ціль успішно додано</string>
+    <string name="goalEditSuccessfully">Ціль успішно оновлено</string>
+
+    <!-- GoalsFragment popup menu -->
+    <string name="goalIsDane">Цілі досягнуто</string>
+    <string name="editGoal">Редагувати</string>
+    <string name="deleteGoal">Видалити ціль</string>
+
+    <!-- Strings for deadline in GoalsFragments-->
+    <string name="deadlineToday">Дедлайн сьогодні. Поспішіть</string>
+    <string name="afterDeadline">Дедлайн був </string>
+    <string name="afterDeadlineP2"> дні тому</string>
+
+    <!-- Strings for Goal Dialogs -->
+    <string name="makeDoneGoalDialogTitle">Ви дійсно виконали ціль?</string>
+    <string name="deleteGoalDialogTitle">Ви дійсно хочете видалити ціль?</string>
+    <string name="acceptWithQuestion">Так</string>
+    <string name="declineWithQuestion">Ні</string>
+
+    <string name="timeToDeadline">Днів до дедлайну: </string>
+    <string name="whenGoalWasDone">Ціль була досягнута </string>
+
+    <string name="doneGoalsTab">Досягнуті</string>
+    <string name="inProgressGoalsTab">В процесі</string>
+
+    <!-- Months for DoneGoalList -->
+    <string name="January">Січня</string>
+    <string name="February">Лютого</string>
+    <string name="March">Березня</string>
+    <string name="April">Квітня</string>
+    <string name="May">Травня</string>
+    <string name="June">Червня</string>
+    <string name="July">Липня</string>
+    <string name="August">Серпня</string>
+    <string name="September">Вересня</string>
+    <string name="October">Жовтня</string>
+    <string name="November">Листопада</string>
+    <string name="December">Грудня</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>
     <string name="goals_dialog_frag_tones">Виберіть цілі</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
