@@ -30,7 +30,9 @@ import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -57,7 +59,7 @@ public class AddTaskFragment extends Fragment {
     private ArrayList<String> chosenDays;
     private String dayFromCalendar;
     private boolean repeatEveryWeek = false;
-    private String checkedGoals;//goals attached to task
+    private String checkedGoals = "";//goals attached to task
     private String remindTime;
     private int remindTone = 0;
 
@@ -222,8 +224,6 @@ setRememberTimeOnClick(v);
 
         EditText taskText = (EditText) view.findViewById(R.id.taskName);
 
-
-
         Button buttonDone = (Button) view.findViewById(R.id.sendDataForAddTask);
         buttonDone.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -260,9 +260,12 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
             return;
         }
 
+        List<String> checkedGoalsList = new ArrayList<>();
+        if (checkedGoals.length() > 0)
+        checkedGoalsList = moveFromStringToList(checkedGoals);//i wanna send to DB list of goals, not string
         /* Adding new task
         * if something was wrong: show messege for user and come out*/
-      boolean isTaskAdded =  DBHelper.addTask(writableDb, taskText.getText().toString(), priority, chosenDays, checkedGoals, remindTime, remindTone);
+      boolean isTaskAdded =  DBHelper.addTask(writableDb, taskText.getText().toString(), priority, chosenDays, checkedGoalsList, remindTime, remindTone);
 
         if (!isTaskAdded)
         {
@@ -276,9 +279,17 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
-              getActivity().finish();// end this activity and come back to previous
+                getFragmentManager().popBackStack();// end this activity and come back to previous
             }
         }, 800);
+
+    }
+
+    private List<String> moveFromStringToList(String value) {
+        String[] arr = value.split("\\|");
+        List<String> list = Arrays.asList(arr);
+
+        return list;
 
     }
 

@@ -1,0 +1,76 @@
+<android.support.percent.PercentRelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/taskFragmentLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/fragmentBackground"
+    android:layout_marginBottom="@dimen/margin_top_bottom_fragment"
+    android:layout_marginTop="@dimen/margin_top_bottom_fragment"
+    tools:context=".TaskFragment"
+    android:minHeight="@dimen/fragment_minHeight">
+
+
+    <ImageView
+        android:id="@+id/priority_bell"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/priority_bell_left_margin"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/ic_priority_bell" />
+
+    <TextView
+        android:id="@+id/task_text"
+        android:layout_height="wrap_content"
+        android:text="Implement design and do something here. Test data. Bla-bla"
+        android:layout_width="wrap_content"
+        android:layout_toRightOf="@id/priority_bell"
+        app:layout_widthPercent="70%"
+        android:layout_marginBottom="@dimen/fragment_goal_padding"
+        android:layout_marginLeft="@dimen/priority_bell_left_margin"/>
+
+
+
+
+    <ImageView
+        android:id="@+id/action_more_fragment"
+        android:src="@drawable/ic_more_vertical"
+        android:layout_width="@dimen/fragment_more_width"
+        android:layout_height="wrap_content"
+        android:text="Menu"
+        android:clickable="true"
+        android:background="@drawable/pressed_imageview_fragment_task"
+        android:layout_toRightOf="@+id/done_task"
+        android:layout_toEndOf="@+id/done_task" />
+
+
+    <ImageView
+        android:id="@+id/done_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/action_more_fragment"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/ic_done_task"
+        android:layout_toRightOf="@id/task_text"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/priority_bell"
+        android:layout_below="@id/task_text"
+        android:layout_toStartOf="@id/done_task">
+
+        <co.lujun.androidtagview.TagContainerLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:padding="10dp"
+            app:container_enable_drag="false"
+            app:horizontal_interval="10dp"
+            app:vertical_interval="10dp"
+            app:container_background_color="@color/fragmentBackground"
+            android:id="@+id/tagcontainerLayout"
+            app:tag_theme="pure_teal" />
+    </RelativeLayout>
+</android.support.percent.PercentRelativeLayout >
+

@@ -5,6 +5,13 @@
     android:layout_marginTop="100dp"
     tools:context=".MainActivity" >
 
+    <include layout="@layout/subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/subtitle"
+        android:layout_marginTop="@dimen/marginTop_subtitle"
+        android:layout_marginBottom="@dimen/marginBottom_subtitle"
+        />
 
     <include layout="@android:layout/list_content" />
     <ListView

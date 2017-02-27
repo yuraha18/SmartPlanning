@@ -14,29 +14,12 @@
     tools:showIn="@layout/app_bar_main">
 
 
-    <include layout="@layout/subtitle"
+
+    <com.rey.material.widget.FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/subtitle"
-        android:layout_marginTop="@dimen/marginTop_subtitle"
-        android:layout_marginBottom="@dimen/marginBottom_subtitle"
-        />
+        android:id="@+id/addTaskFrame">
 
-
-    <FrameLayout
-        android:id="@+id/taskFragments"
-        android:layout_width="match_parent"
-        android:layout_below="@id/subtitle"
-        android:layout_height="wrap_content">
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/goalsFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </FrameLayout>
-
-
-
+    </com.rey.material.widget.FrameLayout>
 
 </RelativeLayout>

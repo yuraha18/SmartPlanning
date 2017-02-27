@@ -8,10 +8,14 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
+
+import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
+import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -20,15 +24,18 @@ import java.util.List;
 
 /* DialogAlert for choosing goals for new task*/
 public class DialogFragmentForGoals extends DialogFragment {
-    final String[] allGoals;
+   String[] allGoals;
+    private SQLiteDatabase readableDb ;
 
-    {
-       allGoals  = new String[] {"Побувати в Києві", "Купити Subaru Imprezza","Сімя",  "Заробляти 1000$ в місяць"};
-    }
 
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        SPDatabase db = new SPDatabase(getActivity());
+        readableDb = db.getReadableDatabase();
+
+        ArrayList<String> goalsList = DBHelper.getAllGoalsInProgress(readableDb);
+        allGoals = goalsList.toArray(new String[goalsList.size()]);
 
         Bundle mArgs = getArguments();
         String myValue = mArgs.getString("checkedGoals");

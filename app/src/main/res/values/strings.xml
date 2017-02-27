@@ -90,6 +90,9 @@
     <string name="November">Листопада</string>
     <string name="December">Грудня</string>
 
+    <string name="editTask">Редагувати</string>
+    <string name="deleteTask">Видалити</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>

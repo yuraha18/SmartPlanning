@@ -8,8 +8,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
+import com.eplan.yuraha.easyplanning.ListAdapters.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Yura on 17.02.2017.
@@ -18,7 +20,7 @@ import java.util.ArrayList;
 public class DBHelper {
 
     public static boolean addTask(SQLiteDatabase db, String text, int priority,
-                                  ArrayList<String> chosenDays, String checkedGoals,
+                                  ArrayList<String> chosenDays, List<String> checkedGoals,
                                   String remindTime, int remindTone){
 try {
     long taskID = addToTasksTable(db, text, priority);
@@ -30,6 +32,9 @@ try {
     }
 
     addToInProgressTasks(db, taskID);
+
+    if (checkedGoals.size() > 0)
+    addToTaskToGoalTable(db, taskID, checkedGoals);
 }
 catch (SQLiteException e)
 {return false;}
@@ -39,6 +44,32 @@ catch (SQLiteException e)
 
         
         return true;
+    }
+
+    private static void addToTaskToGoalTable(SQLiteDatabase db, long taskID, List<String> checkedGoals) {
+        ContentValues value = new ContentValues();
+        for (String goal : checkedGoals)
+        {
+            long goalID = getGoalIdFromGoalText(db, goal);
+            value.put("TASK_ID", taskID);
+            value.put("GOAL_ID", goalID);
+            long id = db.insert("TaskToGoal", null, value);
+            value.clear();
+        }
+    }
+
+    private static long getGoalIdFromGoalText(SQLiteDatabase db, String goalText) {
+        Cursor cursor = db.query ("Goals",
+                new String[] {"_id"},
+                "GOAL_TEXT = ?",
+                new String[] {goalText},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getLong(0);
+
+
+        return -1;
     }
 
     private static long addToInProgressTasks(SQLiteDatabase db, long taskID) throws SQLiteException {
@@ -389,15 +420,171 @@ catch (SQLiteException e)
        else
            throw new SQLiteException();
 
-
-
-
-
-
-
-
    }
 
+
+    public static ArrayList<String> getAllGoalsInProgress (SQLiteDatabase db)
+    {
+        ArrayList<String> goals = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT * FROM InProgressGoals" , null);
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                String goalId = cursor.getString(1);
+                try {
+                    Goal goal = getGoalFromId(db, goalId);
+                    goals.add(goal.getGoalName());
+                }
+                catch (Exception e){}
+                cursor.moveToNext();
+            }
+        }
+
+        return goals;
+    }
+
+    public static ArrayList<Task> getAllTasksFromDay(SQLiteDatabase db, String day)
+    {
+      ArrayList<Task> tasksList = new ArrayList<>();
+
+        long dayID = getDayFromString(db, day);
+        ArrayList<Long> tasksIdList = getTasksListFromRepeatingTable(db, dayID);
+
+        for (Long taskId : tasksIdList)
+        {
+            String taskText = getTaskTextFromId(db, taskId);
+            int priority = getTaskPriorityFromID(db, taskId);
+            boolean isDone = isTaskDone(db, taskId);
+            ArrayList<String> goals = getTaskGoals(db, taskId);
+            Task task = new Task(taskId, taskText, priority, isDone, goals);
+
+            // if task is done put it to the end of list (and listView). If now done - to the top
+            if (isDone)
+                tasksList.add(task);
+            else
+                tasksList.add(0, task);
+
+        }
+
+        return tasksList;
+    }
+
+    private static ArrayList<String> getTaskGoals(SQLiteDatabase db, Long taskId) {
+
+        ArrayList<String> goalList = new ArrayList<>();
+
+        Cursor cursor = db.query ("TaskToGoal",
+                new String[] {"GOAL_ID"},
+                "TASK_ID = ?",
+                new String[] {taskId+""},
+                null, null,null);
+
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                try {
+                    long goalId = cursor.getLong(0);
+                    String goalText = getGoalTextFromId(db, goalId);
+                    goalList.add(goalText);
+
+                }
+                catch (Exception e){}
+                cursor.moveToNext();
+            }
+        }
+        return goalList;
+    }
+
+    private static String getGoalTextFromId(SQLiteDatabase db, long goalId) {
+        Cursor cursor = db.query ("Goals",
+                new String[] {"GOAL_TEXT"},
+                "_id = ?",
+                new String[] {goalId+""},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getString(0);
+
+
+        throw new SQLiteException();
+    }
+
+    public static boolean isTaskDone(SQLiteDatabase db, Long taskId) {
+        Cursor cursor = db.query ("DoneTasks",
+                new String[] {"_id"},
+                "TASK_ID = ?",
+                new String[] {taskId+""},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return true;
+
+        return false;
+    }
+
+    private static int getTaskPriorityFromID(SQLiteDatabase db, Long taskId) {
+        Cursor cursor = db.query ("Tasks",
+                new String[] {"PRIORITY"},
+                "_id = ?",
+                new String[] {taskId+""},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getInt(0);
+
+
+        throw new SQLiteException();
+    }
+
+    public static String getTaskTextFromId(SQLiteDatabase db, long taskId) {
+        Cursor cursor = db.query ("Tasks",
+                new String[] {"TASK_TEXT"},
+                "_id = ?",
+                new String[] {taskId+""},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getString(0);
+
+
+        throw new SQLiteException();
+    }
+
+    public static ArrayList<Long> getTasksListFromRepeatingTable(SQLiteDatabase db, long dayID) {
+        ArrayList<Long> idList = new ArrayList<>();
+
+        Cursor cursor = db.query ("Repeating",
+                new String[] {"TASK_ID"},
+                "DAY_ID = ?",
+                new String[] {dayID+""},
+                null, null,null);
+
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                try {
+                   long taskId = cursor.getLong(0);
+                    idList.add(taskId);
+                }
+                catch (Exception e){}
+                cursor.moveToNext();
+            }
+        }
+        return idList;
+    }
+
+    public static boolean deleteTask(SQLiteDatabase db, long taskId)
+    {
+        try {
+            int result =  db.delete("Tasks","_id=? ",new String[]{taskId+""});
+            db.delete("Repeating","TASK_ID=? ",new String[]{taskId+""});
+            db.delete("InProgressTasks","TASK_ID=? ",new String[]{taskId+""});
+            if (result >0)
+                return true;
+
+            else
+                return false;
+        }
+        catch (Exception e){return false;}
+
+    }
 }
 
 
