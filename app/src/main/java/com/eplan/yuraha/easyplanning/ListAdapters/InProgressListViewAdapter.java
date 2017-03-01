@@ -5,8 +5,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -17,7 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.eplan.yuraha.easyplanning.AddGoalActivity;
+import com.eplan.yuraha.easyplanning.AddGoalFragment;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 import com.eplan.yuraha.easyplanning.DoneGoalsListFragment;
@@ -37,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 
 public class InProgressListViewAdapter extends BaseAdapter {
     public ArrayList<Goal> goalsList;
-    LayoutInflater inflater;
     private SQLiteDatabase readableDb ;
     private DoneGoalsListFragment doneGoalsListFragment;
     Context context;
@@ -45,18 +48,19 @@ public class InProgressListViewAdapter extends BaseAdapter {
     ImageView moreButton;
     TextView goalNote;
     TextView deadlineText;
+    Fragment goalListsFragment;
     TextView timeToDeadline;
     String goalId;
-    Activity activity;
+    AppCompatActivity activity;
 
-    public InProgressListViewAdapter(LayoutInflater inflater, ArrayList<Goal> list, SQLiteDatabase readableDb, Context context, DoneGoalsListFragment doneGoalsListFragment, FragmentActivity activity){
+    public InProgressListViewAdapter( ArrayList<Goal> list, SQLiteDatabase readableDb, Context context, DoneGoalsListFragment doneGoalsListFragment, AppCompatActivity activity, Fragment parentFragment){
         super();
-        this.inflater = inflater;
         this.context = context;
         goalsList = list;
         this.readableDb = readableDb;
         this.doneGoalsListFragment = doneGoalsListFragment;
         this.activity = activity;
+        goalListsFragment = parentFragment;
     }
 
     @Override
@@ -81,6 +85,10 @@ public class InProgressListViewAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // TODO Auto-generated method stub
+
+
+        final LayoutInflater inflater = (LayoutInflater) activity
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         convertView=inflater.inflate(R.layout.fragment_item, null);
 
         goalName=(TextView) convertView.findViewById(R.id.goalName);
@@ -177,11 +185,16 @@ public class InProgressListViewAdapter extends BaseAdapter {
 
     private void editGoal(int position) {
         String goalId = goalsList.get(position).getId();
-        Intent intent = new Intent(context, AddGoalActivity.class);
-        intent.putExtra("edit", true);
-        intent.putExtra("goalId", goalId);
-        intent.putExtra("positionInList", position);
-        activity.startActivityForResult(intent, 2);
+
+
+        AddGoalFragment taskFragment = new AddGoalFragment();//create new fragment
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("isEdit", true);//create data for sending with fragment
+        bundle.putString("goalID", goalId);
+        bundle.putInt("positionInList", position);
+        taskFragment.setArguments(bundle);// sending is
+        taskFragment.setTargetFragment(goalListsFragment, 2);
+        activity.getSupportFragmentManager().beginTransaction().replace(R.id.addGoalFrame, taskFragment, "EditGoal").addToBackStack("EditGoal").commit();
     }
 
 

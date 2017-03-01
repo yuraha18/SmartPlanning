@@ -93,13 +93,6 @@ private View view;//link on main view
 
     }
 
-    {
-        allGoals.add("Побувати в Києві");
-        allGoals.add("Купити Subaru Imprezza");
-        allGoals.add("Сімя");
-        allGoals.add("Заробляти 1000$ в місяць");
-    }
-
     /*Find out all toggles, add them to ArrayList and initialize
      * !!! Rewrite this class and xml file in future for dynamically adding toggles  */
     private void initializeAllToggles() {
@@ -279,7 +272,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
-                getFragmentManager().popBackStack();// end this activity and come back to previous
+                getFragmentManager().popBackStack();// end this fragment and come back to previous
             }
         }, 800);
 
@@ -506,6 +499,7 @@ private void setToneOnClick(View v)
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
+
             switch (requestCode) {
                 case 1:
                     checkedGoals = data.getStringExtra("value");break;

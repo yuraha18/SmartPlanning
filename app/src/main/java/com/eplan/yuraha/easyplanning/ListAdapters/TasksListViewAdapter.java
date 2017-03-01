@@ -23,7 +23,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.eplan.yuraha.easyplanning.AddGoalActivity;
+
 import com.eplan.yuraha.easyplanning.AddTask;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;

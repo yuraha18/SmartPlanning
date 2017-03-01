@@ -1,28 +1,31 @@
 package com.eplan.yuraha.easyplanning;
 
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
-import com.eplan.yuraha.easyplanning.ListAdapters.InProgressListViewAdapter;
+import com.eplan.yuraha.easyplanning.ListAdapters.ViewPagerAdapter;
 
-import java.util.ArrayList;
+/**
+ * Created by yuraha18 on 2/28/2017.
+ */
 
-
-public class InProgressGoalListFragment extends ListFragment {
+public class GoalListsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -32,23 +35,28 @@ public class InProgressGoalListFragment extends ListFragment {
     private String mParam1;
     private String mParam2;
 
-    private ArrayList<Goal> goalsList;
-    private DoneGoalsListFragment doneGoalsListFragment;
-
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
     private SQLiteDatabase readableDb ;
-    InProgressListViewAdapter adapter;
-    AppCompatActivity activity;
-    View view;
+    View mCustomView;
+    GoalsActivity activity;
+    private DoneGoalsListFragment doneGoalsListFragment;
+    private InProgressGoalListFragment inProgressGoalListFragment;
+    ViewGroup appBarLayout;
+
     private OnFragmentInteractionListener mListener;
 
-    public InProgressGoalListFragment(DoneGoalsListFragment doneGoalsListFragment, AppCompatActivity activity) {
-        this.doneGoalsListFragment = doneGoalsListFragment;
-        this.activity = activity;
-        System.out.println("in progress constr");
+    public GoalListsFragment(AppBarLayout appBarLayout, GoalsActivity goalsActivity)
+    {
+        this.appBarLayout = appBarLayout;
+this.activity = goalsActivity;
     }
 
-    public InProgressGoalListFragment() {
+    public GoalListsFragment()
+    {
+
     }
+
 
     /**
      * Use this factory method to create a new instance of
@@ -59,8 +67,8 @@ public class InProgressGoalListFragment extends ListFragment {
      * @return A new instance of fragment InProgressGoalsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static InProgressGoalListFragment newInstance(String param1, String param2) {
-        InProgressGoalListFragment fragment = new InProgressGoalListFragment();
+    public static GoalListsFragment newInstance(String param1, String param2) {
+        GoalListsFragment fragment = new GoalListsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -76,7 +84,7 @@ public class InProgressGoalListFragment extends ListFragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        System.out.println("in progress oncreate");
+
         SPDatabase db = new SPDatabase(getActivity());
         readableDb = db.getReadableDatabase();
     }
@@ -84,27 +92,42 @@ public class InProgressGoalListFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-         view = inflater.inflate(R.layout.fragment_item_list, container, false);
-
-        ListView listView = (ListView) view.findViewById(R.id.goalsListView);
-        fillInGoalsList();
-
-                adapter=new InProgressListViewAdapter(goalsList, readableDb, getContext(), doneGoalsListFragment, activity, getParentFragment());
-        listView.setAdapter(adapter);
 
 
-        return view;
+
+        SPDatabase db = new SPDatabase(getActivity());
+        readableDb = db.getReadableDatabase();
+
+        View contentView = inflater.inflate(R.layout.goal_list_fragment, null, false);
+        System.out.println("i rebuild al");
+        viewPager = (ViewPager) contentView.findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+
+        LayoutInflater mInflater=LayoutInflater.from(getActivity());
+        mCustomView = mInflater.inflate(R.layout.tab_layout, null);
+        tabLayout = (TabLayout) mCustomView.findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+        appBarLayout.addView(mCustomView);
+
+        return contentView;
+
     }
 
-    private void fillInGoalsList() {
-        try {
-            goalsList = DBHelper.getInProgressGoalsList(readableDb);
+    private void setupViewPager(ViewPager viewPager) {
+        doneGoalsListFragment = new DoneGoalsListFragment();
+        inProgressGoalListFragment = new InProgressGoalListFragment(doneGoalsListFragment, activity);
 
-        }
-        catch (Exception e){}
+        ViewPagerAdapter adapter = new ViewPagerAdapter(activity.getSupportFragmentManager());
+        System.out.println("setup view pager");
+        adapter.addFragment(inProgressGoalListFragment, getResources().getString(R.string.inProgressGoalsTab));
+        adapter.addFragment(doneGoalsListFragment, getResources().getString(R.string.doneGoalsTab));
 
+        viewPager.setAdapter(adapter);
     }
+
+
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -129,6 +152,18 @@ public class InProgressGoalListFragment extends ListFragment {
         mListener = null;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        appBarLayout.removeView(mCustomView);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setupViewPager(viewPager);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -142,30 +177,6 @@ public class InProgressGoalListFragment extends ListFragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-    }
-
-
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-/* requestCode =1 mean that new goal has been added
-* requestCode =2 edit goal*/
-//
-        if (requestCode == 1) {
-            System.out.println("im here");
-            String goalId =   data.getStringExtra("id");
-           // Goal goal = DBHelper.getGoalFromId(readableDb, goalId);
-
-        }
-
-
-        if (requestCode == 2)
-        {
-            String goalId =  data.getStringExtra("goalId");
-            int position = data.getIntExtra("positionInList", 0);
-            System.out.println(position);
-            Goal goal = DBHelper.getGoalFromId(readableDb, goalId);
-
-        }
     }
 
 }
