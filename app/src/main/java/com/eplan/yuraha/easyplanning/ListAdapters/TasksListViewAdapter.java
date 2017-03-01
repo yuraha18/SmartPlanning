@@ -1,13 +1,10 @@
 package com.eplan.yuraha.easyplanning.ListAdapters;
 
-import android.app.Activity;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -24,23 +21,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.eplan.yuraha.easyplanning.AddTask;
+import com.eplan.yuraha.easyplanning.AddGoalFragment;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
-import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
-import com.eplan.yuraha.easyplanning.DoneGoalsListFragment;
-import com.eplan.yuraha.easyplanning.InProgressGoalListFragment;
-import com.eplan.yuraha.easyplanning.MainActivity;
 import com.eplan.yuraha.easyplanning.R;
-import com.eplan.yuraha.easyplanning.TonesDialogFragment;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import co.lujun.androidtagview.TagContainerLayout;
 
@@ -191,16 +177,14 @@ public class TasksListViewAdapter extends BaseAdapter {
 
     private void editTask(int position) {
         long taskId = tasksList.get(position).getId();
-//activity.callAddTaskFragment(position, taskId);// use it cause I cant create this fragment from this fragment
-
-        FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
         AddTaskFragment taskFragment = new AddTaskFragment();//create new fragment
         Bundle bundle = new Bundle();
-        bundle.putString("id", "1");//create data for sending with fragment
+        bundle.putBoolean("isEdit", true);//create data for sending with fragment
+        bundle.putString("taskID", taskId+"");
+        bundle.putString("calledDay", "2-3-2017");
         taskFragment.setArguments(bundle);// sending is
-        ft.replace(R.id.addTaskFrame, taskFragment, "fr1");
-        ft.addToBackStack("fr2");
-        ft.commit();
+        activity.getSupportFragmentManager().beginTransaction().replace(R.id.addTaskFrame, taskFragment, "editTask").addToBackStack("editTask").commit();
+
 
     }
     public void dataHasBeenChanged()

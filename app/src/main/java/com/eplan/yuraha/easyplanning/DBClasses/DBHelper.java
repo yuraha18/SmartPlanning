@@ -46,19 +46,112 @@ catch (SQLiteException e)
         return true;
     }
 
-    private static void addToTaskToGoalTable(SQLiteDatabase db, long taskID, List<String> checkedGoals) {
-        ContentValues value = new ContentValues();
-        for (String goal : checkedGoals)
-        {
-            long goalID = getGoalIdFromGoalText(db, goal);
-            value.put("TASK_ID", taskID);
-            value.put("GOAL_ID", goalID);
-            long id = db.insert("TaskToGoal", null, value);
-            value.clear();
+
+    public static boolean editTask(SQLiteDatabase db, String taskID, boolean isTaskEdit, String text, int priority,
+                                   ArrayList<String> chosenDays, List<String> checkedGoals,
+                                   String remindTime, int remindTone) {
+        try {
+
+            updateTaskTable(db, taskID, text, priority);
+            String remindId = getRemindIdFromTaskId(db, taskID);
+            updateRemindTable(db, remindId, remindTime, remindTone);
+
+
+            if (isTaskEdit)// if user has changed repeating days (toggles) app must update they in db
+                updateRepeatingTable(db, taskID, chosenDays, remindId);
+
+
+                updateTaskToGoalTable(db, taskID, checkedGoals);
+
+
         }
+        catch (SQLiteException e)
+        {return false;}
+        catch (Exception e)
+        {return false;}
+
+
+
+        return true;
+
     }
 
-    private static long getGoalIdFromGoalText(SQLiteDatabase db, String goalText) {
+    private static void updateTaskTable(SQLiteDatabase db, String taskID, String text, int priority) {
+        ContentValues value = new ContentValues();
+        value.put("TASK_TEXT", text);
+        value.put("PRIORITY", priority);
+        int updCount = db.update("Tasks", value, "_id = ?",
+                new String[] { taskID });
+
+
+        if (updCount<1)
+            throw new SQLiteException("cant update RemindTable");
+    }
+
+    private static void updateTaskToGoalTable(SQLiteDatabase db, String taskID, List<String> checkedGoals) {
+        System.out.println("im updateTaskToGoalTable");
+        db.beginTransaction();
+
+        try {
+           int count = db.delete("TaskToGoal", "TASK_ID" + " = ?", new String[] { taskID });
+           addToTaskToGoalTable(db, Long.parseLong(taskID), checkedGoals );
+            db.setTransactionSuccessful();
+        }
+        catch (Exception e){}
+        finally {
+            db.endTransaction();
+        }
+
+    }
+
+    private static void updateRepeatingTable(SQLiteDatabase db, String taskID, ArrayList<String> chosenDays, String remindId) {
+
+        db.beginTransaction();
+
+        try {
+            db.delete("Repeating", "TASK_ID" + " = ?", new String[] { taskID });
+
+            for (String day : chosenDays) {
+                long dayID = addToDateTable(db, day);
+                addToRepeatingTable(db, Long.parseLong(taskID), dayID ,Long.parseLong(remindId));
+            }
+            db.setTransactionSuccessful();
+        }
+        catch (Exception e){}
+        finally {
+            db.endTransaction();
+        }
+
+    }
+
+    private static void updateRemindTable(SQLiteDatabase db, String remindId, String remindTime, int remindTone) {
+            ContentValues value = new ContentValues();
+            value.put("TIME", remindTime);
+            value.put("TONE", remindTone);
+            int updCount = db.update("Reminding", value, "_id = ?",
+                    new String[] { remindId });
+
+
+        if (updCount<1)
+            throw new SQLiteException("cant update RemindTable");
+    }
+
+    private static void addToTaskToGoalTable(SQLiteDatabase db, long taskID, List<String> checkedGoals) {
+            ContentValues value = new ContentValues();
+            for (String goal : checkedGoals)
+            {
+                long goalID = getGoalIdFromGoalText(db, goal);
+                value.put("TASK_ID", taskID);
+                value.put("GOAL_ID", goalID);
+                long id = db.insert("TaskToGoal", null, value);
+                System.out.println(id);
+                value.clear();
+            }
+
+
+    }
+
+    public static long getGoalIdFromGoalText(SQLiteDatabase db, String goalText) {
         Cursor cursor = db.query ("Goals",
                 new String[] {"_id"},
                 "GOAL_TEXT = ?",
@@ -172,7 +265,7 @@ catch (SQLiteException e)
     }
 
     /* Must be changed in future*/
-    public static boolean isTaskNameExistInThisDay(SQLiteDatabase db, String taskName, ArrayList<String> days) throws SQLiteException
+    public static boolean isTaskNameExistInThisDay(SQLiteDatabase db, String taskName, ArrayList<String> days, String sendedTaskId) throws SQLiteException
     {
         long taskID = getTaskIDByString(db, taskName);
         if (taskID==-1)
@@ -189,8 +282,22 @@ catch (SQLiteException e)
                     new String[]{taskID + "", dayID + ""},
                     null, null, null);
 
-            if (cursor.moveToFirst())
+            if (cursor.moveToFirst() )
+            {
+                // code bellow for checking tasks while its editing
+                if (sendedTaskId!=null)
+                {
+                    if (sendedTaskId.equals(taskID+""))
+                        return false;
+
+                    else
+                        return true;
+                }
                 return true;
+
+            }
+
+
         }
 
         return false;
@@ -284,6 +391,32 @@ catch (SQLiteException e)
 
         throw new SQLiteException();
     }
+
+    public static ArrayList<String> getDaysForTaskId(SQLiteDatabase db, String taskId)
+    {
+      ArrayList<String> daysList = new ArrayList<>();
+
+        Cursor cursor = db.query ("Repeating",
+                new String[] {"DAY_ID"},
+                "TASK_ID = ?",
+                new String[] {taskId},
+                null, null,null);
+
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                try {
+                    String dayId = cursor.getString(0);
+                    System.out.println(dayId);
+                    String day = getDayFromId(db, dayId);
+                    daysList.add(day);
+                }
+                catch (Exception e){}
+                cursor.moveToNext();
+            }
+        }
+        return daysList;
+    }
+
 
     public static void moveGoalToDone(SQLiteDatabase db,  String goalId, String todaysDate) throws SQLiteException
   {
@@ -423,6 +556,8 @@ catch (SQLiteException e)
    }
 
 
+
+
     public static ArrayList<String> getAllGoalsInProgress (SQLiteDatabase db)
     {
         ArrayList<String> goals = new ArrayList<>();
@@ -442,19 +577,26 @@ catch (SQLiteException e)
         return goals;
     }
 
-    public static ArrayList<Task> getAllTasksFromDay(SQLiteDatabase db, String day)
+    public static ArrayList<Task> getAllTasksFromDay(SQLiteDatabase db, String day, String dayOfWeek)
     {
       ArrayList<Task> tasksList = new ArrayList<>();
 
         long dayID = getDayFromString(db, day);
-        ArrayList<Long> tasksIdList = getTasksListFromRepeatingTable(db, dayID);
+        long dayOfWeekId = getDayFromString(db, dayOfWeek);
+
+        ArrayList<Long> list1 =  getTasksListFromRepeatingTable(db, dayID);
+        ArrayList<Long> list2 =  getTasksListFromRepeatingTable(db, dayOfWeekId);
+
+        ArrayList<Long> tasksIdList = new ArrayList<>();
+        tasksIdList.addAll(list1);
+        tasksIdList.addAll(list2);
 
         for (Long taskId : tasksIdList)
         {
-            String taskText = getTaskTextFromId(db, taskId);
+            String taskText = getTaskTextFromId(db, taskId+"");
             int priority = getTaskPriorityFromID(db, taskId);
             boolean isDone = isTaskDone(db, taskId);
-            ArrayList<String> goals = getTaskGoals(db, taskId);
+            ArrayList<String> goals = getTaskGoals(db, taskId+"");
             Task task = new Task(taskId, taskText, priority, isDone, goals);
 
             // if task is done put it to the end of list (and listView). If now done - to the top
@@ -468,14 +610,67 @@ catch (SQLiteException e)
         return tasksList;
     }
 
-    private static ArrayList<String> getTaskGoals(SQLiteDatabase db, Long taskId) {
+
+    public static String getRemindTimeForTaskId(SQLiteDatabase db, String taskId)
+    {
+        String remindId = getRemindIdFromTaskId(db, taskId);
+
+        Cursor cursor = db.query ("Reminding",
+                new String[] {"TIME"},
+                "_id = ?",
+                new String[] {remindId},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getString(0);
+
+
+        else
+            return "-1";
+    }
+
+    public static int getRemindToneForTaskId(SQLiteDatabase db, String taskId)
+    {
+        String remindId = getRemindIdFromTaskId(db, taskId);
+
+        Cursor cursor = db.query ("Reminding",
+                new String[] {"TONE"},
+                "_id = ?",
+                new String[] {remindId},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getInt(0);
+
+
+        else
+            return 0;
+    }
+
+    public static String getRemindIdFromTaskId(SQLiteDatabase db, String taskId)
+    {
+        Cursor cursor = db.query ("Repeating",
+                new String[] {"REMIND_ID"},
+                "TASK_ID = ?",
+                new String[] {taskId},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getString(0);
+
+
+        else
+            return "-1";
+    }
+
+    public static ArrayList<String> getTaskGoals(SQLiteDatabase db, String taskId) {
 
         ArrayList<String> goalList = new ArrayList<>();
 
         Cursor cursor = db.query ("TaskToGoal",
                 new String[] {"GOAL_ID"},
                 "TASK_ID = ?",
-                new String[] {taskId+""},
+                new String[] {taskId},
                 null, null,null);
 
         if (cursor .moveToFirst()) {
@@ -493,7 +688,7 @@ catch (SQLiteException e)
         return goalList;
     }
 
-    private static String getGoalTextFromId(SQLiteDatabase db, long goalId) {
+    public static String getGoalTextFromId(SQLiteDatabase db, long goalId) {
         Cursor cursor = db.query ("Goals",
                 new String[] {"GOAL_TEXT"},
                 "_id = ?",
@@ -506,6 +701,24 @@ catch (SQLiteException e)
 
         throw new SQLiteException();
     }
+
+    public static int getPriorityFromTaskId(SQLiteDatabase db, String taskId)
+    {
+
+        Cursor cursor = db.query ("Tasks",
+                new String[] {"PRIORITY"},
+                "_id = ?",
+                new String[] {taskId},
+                null, null,null);
+
+        if (cursor.moveToFirst())
+            return cursor.getInt(0);
+
+        else
+            return 1;
+
+    }
+
 
     public static boolean isTaskDone(SQLiteDatabase db, Long taskId) {
         Cursor cursor = db.query ("DoneTasks",
@@ -520,7 +733,7 @@ catch (SQLiteException e)
         return false;
     }
 
-    private static int getTaskPriorityFromID(SQLiteDatabase db, Long taskId) {
+    public static int getTaskPriorityFromID(SQLiteDatabase db, Long taskId) {
         Cursor cursor = db.query ("Tasks",
                 new String[] {"PRIORITY"},
                 "_id = ?",
@@ -534,7 +747,7 @@ catch (SQLiteException e)
         throw new SQLiteException();
     }
 
-    public static String getTaskTextFromId(SQLiteDatabase db, long taskId) {
+    public static String getTaskTextFromId(SQLiteDatabase db, String taskId) {
         Cursor cursor = db.query ("Tasks",
                 new String[] {"TASK_TEXT"},
                 "_id = ?",
@@ -585,6 +798,8 @@ catch (SQLiteException e)
         catch (Exception e){return false;}
 
     }
+
+
 }
 
 

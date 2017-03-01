@@ -163,7 +163,6 @@ public class AddGoalFragment extends Fragment {
             timer.schedule(new TimerTask() {
                 public void run() {
                     getFragmentManager().popBackStack();
-
                 }
             }, 800);
         }

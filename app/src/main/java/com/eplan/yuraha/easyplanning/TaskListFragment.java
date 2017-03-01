@@ -37,11 +37,13 @@ public class TaskListFragment extends ListFragment {
     private String mParam2;
     private AppCompatActivity activity;
 
-
+    private String dateFormat = "dd-mm-yyyy";
     ArrayList<Task> tasksList;
     TasksListViewAdapter listViewAdapter;
     private SQLiteDatabase readableDb ;
     ListView listView;
+
+    private String[] weekDays = new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 
     Spinner materialBetterSpinner ;
@@ -101,7 +103,7 @@ public class TaskListFragment extends ListFragment {
         materialBetterSpinner.setAdapter(adapter);
 
         listView = (ListView) view.findViewById(R.id.tasksListView);
-        fillInTasksList("28-2-2017");
+        fillInTasksList("2-3-2017");
 
 
        listViewAdapter=new TasksListViewAdapter (inflater, tasksList, readableDb, activity, getContext());
@@ -113,7 +115,8 @@ public class TaskListFragment extends ListFragment {
 
     private void fillInTasksList(String day) {
         try {
-            tasksList = DBHelper.getAllTasksFromDay(readableDb, day);
+            int dayOfWeek = AddTaskFragment.getDayOfWeek(day, dateFormat);
+            tasksList = DBHelper.getAllTasksFromDay(readableDb, day, weekDays[dayOfWeek]);
         }
         catch (Exception e)
         {
@@ -121,6 +124,9 @@ public class TaskListFragment extends ListFragment {
         }
 
     }
+
+
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {

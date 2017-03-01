@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,9 +30,12 @@ import android.widget.ToggleButton;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,7 +65,16 @@ public class AddTaskFragment extends Fragment {
     private boolean repeatEveryWeek = false;
     private String checkedGoals = "";//goals attached to task
     private String remindTime;
-    private int remindTone = 0;
+    private int remindTone = -1;
+    private String calledDay;
+
+    /* This variable is true after user clicking on Toggle button
+    * its using when i update task in Db
+    * if user didnt change toggles i not change Repeating table
+    * else delete old data from thee and add updated*/
+    private  boolean isToggleEdit;
+
+    private String dateFormat = "dd-MM-yyyy";
 
     private String lowPriority;
     private String middlePriority;
@@ -69,9 +82,26 @@ public class AddTaskFragment extends Fragment {
     private SQLiteDatabase writableDb ;
     private SQLiteDatabase readableDb ;
 
-    private String[] weekDays = new String[]{"","Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };// In android weeks start in Sunday
+   private int mYear=-1, mMonth=-1, mDay=-1;// variables for openCalendarOnClick method
 
-    private int mHour, mMinute;// variables for TimePicker, keeps current time
+
+    private boolean isEdit;
+
+    private ArrayList<String> weekDays;
+
+    {
+        weekDays = new ArrayList<>();
+        weekDays.add("");// In android weeks start in Sunday
+        weekDays.add("Sunday");
+        weekDays.add("Monday");
+        weekDays.add("Tuesday");
+        weekDays.add("Wednesday");
+        weekDays.add("Thursday");
+        weekDays.add("Friday");
+        weekDays.add("Saturday");
+    }
+
+    private int mHour=-1, mMinute=-1;// variables for TimePicker, keeps current time
     protected ArrayList<ToggleButton> toggleButtons;
 
     private ArrayList<CharSequence> allGoals = new ArrayList<>();
@@ -108,7 +138,7 @@ private View view;//link on main view
 
         toggleButtons.add(new ToggleButton(getContext()));/*I did this for supporting counting in all app. In this case Sunday will be 1 day of week, not 0
                                                            it.s new Object, not null. Because I dont want catch NullPointerException in future if I forget this*/
-        toggleButtons.add(initToggle(toggleSunday));//In Android wekks start from Sunday
+        toggleButtons.add(initToggle(toggleSunday));//In Android weeks start from Sunday
         toggleButtons.add(initToggle(toggleMonday));
         toggleButtons.add(initToggle(toggleTuesday));
         toggleButtons.add(initToggle(toggleWednesday));
@@ -128,6 +158,7 @@ private View view;//link on main view
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                isToggleEdit = true;
                 if (isChecked) {
                     toggle.setTextColor(Color.parseColor("#00E676"));
                 }
@@ -182,6 +213,7 @@ private View view;//link on main view
 
         String[] SPINNER_DATA = {lowPriority, middlePriority, highPriority};
 
+
         prioritySpinner = (Spinner)view.findViewById(R.id.set_priority_spinner);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, SPINNER_DATA);
@@ -205,7 +237,7 @@ setRememberTimeOnClick(v);
             }
         });
 
-        /* Button for choosing remembering tone (posibility adding different tones for different tasks) */
+        /* Button for choosing remembering tone (possibility adding different tones for different tasks) */
         Button setTone = (Button) view.findViewById(R.id.buttonSetTone);
         setTone.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -215,25 +247,229 @@ setRememberTimeOnClick(v);
         });
 
 
-        EditText taskText = (EditText) view.findViewById(R.id.taskName);
-
-        Button buttonDone = (Button) view.findViewById(R.id.sendDataForAddTask);
-        buttonDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-             addTaskButton();
-            }
-        });
+         taskText = (EditText) view.findViewById(R.id.taskName);
 
         ImageButton buttonOpenCalendar = (ImageButton) view.findViewById(R.id.buttonOpenCalendar);
         buttonOpenCalendar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isToggleEdit = true;
                 openCalendarOnClick(v);
             }
         });
 
+        Button buttonDone = (Button) view.findViewById(R.id.sendDataForAddTask);
+
+        isEdit = getArguments().getBoolean("isEdit");
+        if (isEdit)
+        {
+            calledDay = getArguments().getString("calledDay");
+           final String taskId = getArguments().getString("taskID");
+            fillInViewByDataFromDB(taskId);
+            buttonDone.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    editTaskButton(taskId);
+                }
+            });
+        }
+
+        else {
+            buttonDone.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addTaskButton();
+                }
+            });
+        }
+
+
+
         return view;
+    }
+
+    private void fillInViewByDataFromDB(String taskId) {
+        try {
+            taskText.setText(DBHelper.getTaskTextFromId(readableDb, taskId));
+            int priority = DBHelper.getPriorityFromTaskId(readableDb, taskId);
+            prioritySpinner.setSelection(priority-1);// subtract 1 cause position stars from 0, my priority from 1
+            checkTogglesByDbData(taskId);
+
+
+            ArrayList<String> goals = DBHelper.getTaskGoals(readableDb, taskId);
+
+            for (String goal : goals)
+                checkedGoals+= goal +"|";
+
+            remindTime = DBHelper.getRemindTimeForTaskId(readableDb, taskId);
+            System.out.println(remindTime);
+            setTimeFromString(remindTime);
+            remindTone = DBHelper.getRemindToneForTaskId(readableDb, taskId);
+
+        }
+       catch (SQLiteException e)
+        {
+            Toast.makeText(getActivity(), getResources().getString(R.string.cantParseDataFromViewsException), Toast.LENGTH_LONG).show();
+        }
+
+
+    }
+
+    /* i have time like 13:40 and here Im parsing it and set hour and minute for TimePicker*/
+    private void setTimeFromString(String remindTime) {
+        try {
+            String[] time = remindTime.split(":");
+            mHour = Integer.parseInt(time[0]);
+            mMinute = Integer.parseInt(time[1]);
+
+        }
+        catch (Exception e)
+        {
+            mHour = -1;
+            mMinute =-1;
+        }
+
+
+    }
+
+    private void checkTogglesByDbData(String taskId) {
+        ArrayList<String> days = DBHelper.getDaysForTaskId(readableDb, taskId);
+        boolean repeatingEveryWeek = false;
+
+        for (String day : days)
+        {
+
+            int dayPosition =0;
+            if (weekDays.contains(day))
+            {
+                repeatingEveryWeek = true;
+
+                dayPosition  = weekDays.indexOf(day);
+
+                toggleButtons.get(dayPosition).setChecked(true);
+
+            }
+            else
+            {
+
+
+                if (distanceBetweenTwoDates(calledDay, day) < 7 )
+                {
+                    dayPosition = getDayOfWeek(day, dateFormat);
+                    toggleButtons.get(dayPosition).setChecked(true);
+                    System.out.println(day + ":" + dayPosition);
+                }
+                else {
+                    setDateFromString(day);
+                }
+
+            }
+
+
+        }
+
+        if (repeatingEveryWeek) {
+
+            CheckBox repeatingCheckBox = (CheckBox) view.findViewById(R.id.repeatEveryWeekCheckBox);
+            repeatingCheckBox.setChecked(true);
+        }
+
+    }
+
+    private void setDateFromString(String day) {
+
+        try {
+            String[] date = day.split("-");
+            mDay = Integer.parseInt(date[0]);
+            mMonth = Integer.parseInt(date[1])-1;//days in Calendar starts from 0, im starting from 1
+            mYear = Integer.parseInt(date[2]);
+        }
+        catch (Exception e){}
+    }
+
+    private int distanceBetweenTwoDates(String calledDay, String day) {
+        Calendar calledDayCalendar = Calendar.getInstance();
+        Calendar dayCalendar = Calendar.getInstance();
+
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+
+        try {
+            Date date = formatter.parse(calledDay);
+            calledDayCalendar.setTime(date);
+            date = formatter.parse(day);
+            dayCalendar.setTime(date);
+
+            int countDays = daysBetween(calledDayCalendar.getTime(),dayCalendar.getTime());
+
+            return countDays < 0 ? countDays*(-1) : countDays;
+        }
+        catch (Exception e)
+        {
+            return -1;
+        }
+
+    }
+
+    public int daysBetween(Date d1, Date d2){
+        return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+
+    public static int getDayOfWeek(String day, String dateFormat) {
+        try {
+            DateFormat formatter = new SimpleDateFormat(dateFormat);
+            Date date = formatter.parse(day);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            return calendar.get(Calendar.DAY_OF_WEEK);
+        }
+
+        catch (Exception e)
+        {
+            return 1;
+        }
+
+
+
+    }
+
+    private void editTaskButton(String taskId) {
+
+        if (!getTaskDataFromViews())
+            return;
+
+        /*If there are the same task in this day we prevent user and come out */
+        boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.getText().toString(), chosenDays, taskId);
+        if (checkTaskInDB)
+        {
+            Toast.makeText(getActivity(), getContext().getResources().getString(R.string.taskAlreadyExistsInDB), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        List<String> checkedGoalsList = new ArrayList<>();
+        if (checkedGoals.length() > 0)
+            checkedGoalsList = moveFromStringToList(checkedGoals);//i wanna send to DB list of goals, not string
+        /* Adding new task
+        * if something was wrong: show message for user and come out*/
+        boolean isTaskEdited =  DBHelper.editTask(writableDb, taskId, isToggleEdit, taskText.getText().toString(), priority, chosenDays, checkedGoalsList, remindTime, remindTone);
+
+        if (!isTaskEdited)
+        {
+            Toast.makeText(getActivity(), getContext().getResources().getString(R.string.taskNotAddedInDB), Toast.LENGTH_LONG);
+            return;
+        }
+
+/* If adding was successful show message
+* wait 0.8 sec and back to previos activity*/
+        Toast.makeText(getActivity(), getContext().getResources().getString(R.string.taskEditSuccessfully), Toast.LENGTH_LONG).show();
+        final Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            public void run() {
+                getFragmentManager().popBackStack();// end this fragment and come back to previous
+            }
+        }, 800);
+
     }
 
     /*This method called after user's clicking on "Done" button
@@ -246,7 +482,7 @@ setRememberTimeOnClick(v);
            return;
 
         /*If there are the same task in this day we prevent user and come out */
-boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.getText().toString(), chosenDays);
+boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.getText().toString(), chosenDays, null);
         if (checkTaskInDB)
         {
             Toast.makeText(getActivity(), getContext().getResources().getString(R.string.taskAlreadyExistsInDB), Toast.LENGTH_LONG).show();
@@ -257,7 +493,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
         if (checkedGoals.length() > 0)
         checkedGoalsList = moveFromStringToList(checkedGoals);//i wanna send to DB list of goals, not string
         /* Adding new task
-        * if something was wrong: show messege for user and come out*/
+        * if something was wrong: show message for user and come out*/
       boolean isTaskAdded =  DBHelper.addTask(writableDb, taskText.getText().toString(), priority, chosenDays, checkedGoalsList, remindTime, remindTone);
 
         if (!isTaskAdded)
@@ -327,7 +563,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
             for (int i =0; i< toggleButtons.size(); i++)
             {
                 if (toggleButtons.get(i).isChecked())
-                    chosenDays.add(weekDays[i]);
+                    chosenDays.add(weekDays.get(i));
             }
         }
 
@@ -424,8 +660,17 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
     /* Tone.OnClickListener call this method for creating ToneDialogFragment*/
 private void setToneOnClick(View v)
 {
+    Bundle bundle = new Bundle();
+    if (remindTone!=-1)
+        bundle.putInt("position", remindTone);
+
+    else
+    bundle.putInt("position", 0);
+
+
     TonesDialogFragment fragment = new TonesDialogFragment();
     fragment.setTargetFragment(this, 2);
+    fragment.setArguments(bundle);
     fragment.show(getFragmentManager(), fragment.getClass().getName());
 
 }
@@ -433,9 +678,13 @@ private void setToneOnClick(View v)
 
     private   void openCalendarOnClick(View v) {
         final Calendar calendar = Calendar.getInstance();
-       int mYear = calendar.get(Calendar.YEAR);
-       int mMonth = calendar.get(Calendar.MONTH);
-       int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        //if date hadnt been chosen before. Else - will be set date from DB
+        if (mYear==-1 || mMonth==-1 || mDay==-1) {
+            mYear = calendar.get(Calendar.YEAR);
+            mMonth = calendar.get(Calendar.MONTH);
+            mDay = calendar.get(Calendar.DAY_OF_MONTH);
+        }
 
         // Launch Date Picker Dialog
         DatePickerDialog dpd = new DatePickerDialog(getActivity(),
@@ -458,9 +707,12 @@ private void setToneOnClick(View v)
     public void setRememberTimeOnClick(View v)
     {
         // Get current time
-        final Calendar calendar = Calendar.getInstance();
-        mHour = calendar.get(Calendar.HOUR_OF_DAY);
-        mMinute = calendar.get(Calendar.MINUTE);
+
+        if (mHour==-1 || mMinute==-1) {
+            final Calendar calendar = Calendar.getInstance();
+            mHour = calendar.get(Calendar.HOUR_OF_DAY);
+            mMinute = calendar.get(Calendar.MINUTE);
+        }
 
         // Launch Time Picker Dialog
         TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(),

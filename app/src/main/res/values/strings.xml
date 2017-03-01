@@ -51,6 +51,7 @@
     <string name="cantDeleteGoalException">Проблема з видаленнням цілі. Спробуйте пізніше</string>
 
     <string name="taskAddSuccessfully">Завдання успішно додано</string>
+    <string name="taskEditSuccessfully">Завдання оновлено додано</string>
     <string name="goalAddSuccessfully">Ціль успішно додано</string>
     <string name="goalEditSuccessfully">Ціль успішно оновлено</string>
 

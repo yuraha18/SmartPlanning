@@ -21,9 +21,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddTask"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".GoalsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AddGoalActivity"

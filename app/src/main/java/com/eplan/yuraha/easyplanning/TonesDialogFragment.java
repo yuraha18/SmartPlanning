@@ -23,11 +23,12 @@ public class TonesDialogFragment extends DialogFragment {
     }
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
+        int position = getArguments().getInt("position");
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle(getContext().getResources().getString(R.string.tones_dialog_frag_title))
 
-                .setSingleChoiceItems(tonesArray, -1,
+                .setSingleChoiceItems(tonesArray, position,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog,
