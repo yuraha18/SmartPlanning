@@ -30,7 +30,8 @@ public class SPDatabase extends SQLiteOpenHelper {
         /* Save id's all doneTasks*/
         db.execSQL("CREATE TABLE DoneTasks ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "TASK_ID INTEGER);");
+                + "TASK_ID INTEGER, "
+                + "DAY_ID INTEGER);");
 
         /* Save id's all notDoneTasks*/
         db.execSQL("CREATE TABLE InProgressTasks ("
@@ -79,6 +80,19 @@ public class SPDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE Days("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "DAY TEXT);");
+
+        /* If user delete repeated task from some day, it check in here */
+        db.execSQL("CREATE TABLE DeletedTasks("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "TASK_ID INTEGER, "
+                + "DAY_ID INTEGER);");
+
+        /* Tasks Lifecycle: from day when it was created to deleted day */
+        db.execSQL("CREATE TABLE TaskLifecycle("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "TASK_ID INTEGER, "
+                + "DAY_FROM_ID INTEGER, "
+                + "DAY_TO_ID INTEGER);");
 
         addDayToDB(db, "Sunday");
         addDayToDB(db, "Monday");

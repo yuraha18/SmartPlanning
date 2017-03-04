@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -25,8 +23,10 @@ import com.eplan.yuraha.easyplanning.AddGoalFragment;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.R;
+import com.eplan.yuraha.easyplanning.TaskListFragment;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import co.lujun.androidtagview.TagContainerLayout;
 
@@ -38,6 +38,9 @@ public class TasksListViewAdapter extends BaseAdapter {
     public ArrayList<Task> tasksList;
     LayoutInflater inflater;
     private SQLiteDatabase readableDb ;
+
+    private TaskListFragment parentFragment;
+
     AppCompatActivity activity;
     ImageView priorityBell;
     ImageView moreButton;
@@ -45,11 +48,12 @@ public class TasksListViewAdapter extends BaseAdapter {
     TextView taskText;
     ImageView isDone;
     TagContainerLayout tagContainerLayout;
-    long taskId;
+
 
     private String[] months ;
-    public TasksListViewAdapter(LayoutInflater inflater, ArrayList<Task> list, SQLiteDatabase readableDb, AppCompatActivity activity, Context context){
+    public TasksListViewAdapter(TaskListFragment parentFragment, LayoutInflater inflater, ArrayList<Task> list, SQLiteDatabase readableDb, AppCompatActivity activity, Context context){
         super();
+        this.parentFragment = parentFragment;
         this.inflater = inflater;
         this.activity = activity;
         this.context = context;
@@ -77,13 +81,21 @@ public class TasksListViewAdapter extends BaseAdapter {
         return 0;
     }
 
+public void setNewData(ArrayList<Task> list)
+{
+    tasksList.clear();
+    tasksList.addAll(list);
+    notifyDataSetChanged();
+}
+{
 
+}
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // TODO Auto-generated method stub
         convertView=inflater.inflate(R.layout.task_item, null);
 
-        RelativeLayout relativeLayout = (RelativeLayout) convertView.findViewById(R.id.taskFragmentLayout);
+
         priorityBell=(ImageView) convertView.findViewById(R.id.priority_bell);
         taskText=(TextView) convertView.findViewById(R.id.task_text);
         isDone=(ImageView) convertView.findViewById(R.id.done_task);
@@ -133,7 +145,11 @@ public class TasksListViewAdapter extends BaseAdapter {
                                 editTask(position);
                                 break;
                             case R.id.delete_task:
-                                deleteTaskDialog(position);
+                                deleteTask(position);
+                                break;
+                            case R.id.delete_all_tasks:
+                                deleteAllTasksDialog(position);
+
                         }
 
                         return true;
@@ -147,12 +163,12 @@ public class TasksListViewAdapter extends BaseAdapter {
         });
     }
 
-    private void deleteTaskDialog(final int position) {
+    private void deleteAllTasksDialog(final int position) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-        dialog.setMessage(R.string.deleteGoalDialogTitle)
+        dialog.setMessage(R.string.youReallyWantDeleteTaskInAllDays)
                 .setPositiveButton(R.string.acceptWithQuestion, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        deleteTask(position);
+                        deleteTaskFromAllDays(position);
                     }
                 })
                 .setNegativeButton(R.string.declineWithQuestion, new DialogInterface.OnClickListener() {
@@ -163,16 +179,34 @@ public class TasksListViewAdapter extends BaseAdapter {
         dialog.show();
     }
 
-    private void deleteTask(int position) {
-        long goalId = tasksList.get(position).getId();
-        boolean result = DBHelper.deleteTask(readableDb, goalId);
+    private void deleteTaskFromAllDays(int position) {
+        long taskId = tasksList.get(position).getId();
 
-        if (result) {
-            tasksList.remove(position);
-            dataHasBeenChanged();
+        // 3rd parameter is current day (when user are deleting task), not dayFromSpinner
+        boolean result = DBHelper.deleteTaskFromAllDays(readableDb, taskId, parentFragment.getTodaysDay());
+
+        if (!result)
+            Toast.makeText(context, context.getResources().getString(R.string.cantDeleteException), Toast.LENGTH_LONG).show();
+
+        updateListView();
+    }
+
+    private void deleteTask(int position) {
+      boolean result =  DBHelper.deleteTaskFromDay(readableDb, tasksList.get(position).getId(), parentFragment.getDayFromSpinner());
+
+        if (!result) {
+            Toast.makeText(context, context.getResources().getString(R.string.cantDeleteException), Toast.LENGTH_LONG).show();
+            return;
         }
-        else
-            Toast.makeText(context, context.getResources().getString(R.string.cantDeleteGoalException), Toast.LENGTH_LONG).show();
+
+        updateListView();
+    }
+
+    private void updateListView() {
+
+        int dayOfWeek = AddTaskFragment.getDayOfWeek(parentFragment.getDayFromSpinner(), TaskListFragment.dateFormat);
+        ArrayList<Task> updatedTaskList = DBHelper.getAllTasksFromDay(readableDb, parentFragment.getDayFromSpinner(), TaskListFragment.weekDays[dayOfWeek]);
+        setNewData(updatedTaskList);
     }
 
     private void editTask(int position) {
@@ -181,15 +215,11 @@ public class TasksListViewAdapter extends BaseAdapter {
         Bundle bundle = new Bundle();
         bundle.putBoolean("isEdit", true);//create data for sending with fragment
         bundle.putString("taskID", taskId+"");
-        bundle.putString("calledDay", "2-3-2017");
+        bundle.putString("calledDay", parentFragment.getDayFromSpinner());
         taskFragment.setArguments(bundle);// sending is
         activity.getSupportFragmentManager().beginTransaction().replace(R.id.addTaskFrame, taskFragment, "editTask").addToBackStack("editTask").commit();
 
 
-    }
-    public void dataHasBeenChanged()
-    {
-        notifyDataSetChanged();
     }
 
 

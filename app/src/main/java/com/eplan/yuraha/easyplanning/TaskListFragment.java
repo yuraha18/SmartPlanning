@@ -1,16 +1,23 @@
 package com.eplan.yuraha.easyplanning;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatSpinner;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -24,6 +31,8 @@ import com.eplan.yuraha.easyplanning.ListAdapters.Task;
 import com.eplan.yuraha.easyplanning.ListAdapters.TasksListViewAdapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 
 
 public class TaskListFragment extends ListFragment {
@@ -37,22 +46,28 @@ public class TaskListFragment extends ListFragment {
     private String mParam2;
     private AppCompatActivity activity;
 
-    private String dateFormat = "dd-mm-yyyy";
+    public static final String dateFormat = "dd-MM-yyyy";
     ArrayList<Task> tasksList;
     TasksListViewAdapter listViewAdapter;
     private SQLiteDatabase readableDb ;
     ListView listView;
+    private   String dayFromSpinner;
+    private  ArrayAdapter<String> adapter;
+    private int currentItem;
+    private FloatingActionButton fab;
 
-    private String[] weekDays = new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    public static String[] weekDays = new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 
     Spinner materialBetterSpinner ;
-    String[] SPINNER_DATA = {"Today's tasks","Завдання на завтра","Вибрати день"};
+    ArrayList<String> spinnerDatalist ;
+
 
     private OnFragmentInteractionListener mListener;
 
-    public TaskListFragment(AppCompatActivity activity) {
+    public TaskListFragment(AppCompatActivity activity, FloatingActionButton fab) {
         this.activity = activity;
+        this.fab = fab;
     }
 
     public TaskListFragment() {
@@ -76,6 +91,10 @@ public class TaskListFragment extends ListFragment {
         return fragment;
     }
 
+    public String getDayFromSpinner() {
+        return dayFromSpinner;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,10 +107,14 @@ public class TaskListFragment extends ListFragment {
         SPDatabase db = new SPDatabase(getActivity());
         readableDb = db.getReadableDatabase();
         tasksList = new ArrayList<>();
+        spinnerDatalist = new ArrayList<>();
+        spinnerDatalist.add(getActivity().getResources().getString(R.string.todaysTasks));
+        spinnerDatalist.add(getContext().getResources().getString(R.string.tomorrowsTasks));
+        spinnerDatalist.add(getContext().getResources().getString(R.string.chooseDay));
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_task, container, false);
@@ -99,24 +122,143 @@ public class TaskListFragment extends ListFragment {
 
         materialBetterSpinner = (Spinner) view.findViewById(R.id.day_spinner);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, R.layout.spinner_item, SPINNER_DATA);
+        adapter = new ArrayAdapter<String>(activity, R.layout.spinner_item, spinnerDatalist);
         materialBetterSpinner.setAdapter(adapter);
 
+        dayFromSpinner = getTodaysDay();//set default value
+
+        materialBetterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                switch (position)
+                {
+                    case 0:
+                        dayFromSpinner = getTodaysDay();
+
+                        break;
+                    case 1:
+                        dayFromSpinner = getTomorrowsDay();
+                        break;
+                    case 2:
+                      openCalendarForSpinner();
+                        break;
+
+                    default:
+                        dayFromSpinner = adapter.getItem(position);
+                }
+
+                tasksList.clear();
+                fillInTasksList(dayFromSpinner);
+                listViewAdapter.setNewData(tasksList);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         listView = (ListView) view.findViewById(R.id.tasksListView);
-        fillInTasksList("2-3-2017");
 
-
-       listViewAdapter=new TasksListViewAdapter (inflater, tasksList, readableDb, activity, getContext());
+       listViewAdapter=new TasksListViewAdapter (this, inflater, tasksList, readableDb, activity, getContext());
         listView.setAdapter(listViewAdapter);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
+                AddTaskFragment taskFragment = new AddTaskFragment();//create new fragment
+                Bundle bundle = new Bundle();
+                bundle.putString("calledDay", dayFromSpinner);//create data for sending with fragment
+                taskFragment.setArguments(bundle);// sending is
+                ft.replace(R.id.addTaskFrame, taskFragment, "fr1");
+                ft.addToBackStack("fr2");
+                ft.commit();
+            }
+        });
 
 
         return view;
     }
 
+
+    private String getTomorrowsDay() {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+
+        int mYear = calendar.get(Calendar.YEAR);
+        int  mMonth = calendar.get(Calendar.MONTH);
+        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        return mDay + "-"
+                + (mMonth + 1) + "-" + mYear;
+    }
+
+    private void openCalendarForSpinner() {
+
+        final Calendar calendar = Calendar.getInstance();
+        int mYear = calendar.get(Calendar.YEAR);
+        int mMonth = calendar.get(Calendar.MONTH);
+        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+        System.out.println("im in ff");
+
+        // Launch Date Picker Dialog
+        DatePickerDialog dpd = new DatePickerDialog(getActivity(),
+                new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year,
+                                          int monthOfYear, int dayOfMonth) {
+                        // Save date in class field
+                        dayFromSpinner = dayOfMonth + "-"
+                                + (monthOfYear + 1) + "-" + year;
+insertDayFromSpinnerInAdapter();
+                        adapter.notifyDataSetChanged();
+
+                        materialBetterSpinner.setSelection(3);
+                    }
+                }, mYear, mMonth, mDay);
+        dpd.show();
+    }
+
+    private void insertDayFromSpinnerInAdapter() {
+
+        if (dayFromSpinner==null)
+        return;
+
+        if (adapter.getCount()<4)
+            adapter.insert(dayFromSpinner, 3);// i always set new date in spinner in 3 position
+
+        else
+        {
+            if (dayFromSpinner.equals(adapter.getItem(3)))
+                return;
+
+            adapter.insert(dayFromSpinner, 3);
+        }
+
+    }
+
+
+    public String getTodaysDay() {
+        final Calendar calendar = Calendar.getInstance();
+        int mYear = calendar.get(Calendar.YEAR);
+        int  mMonth = calendar.get(Calendar.MONTH);
+        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        return mDay + "-"
+                + (mMonth + 1) + "-" + mYear;
+
+    }
+
     private void fillInTasksList(String day) {
         try {
+
             int dayOfWeek = AddTaskFragment.getDayOfWeek(day, dateFormat);
+
             tasksList = DBHelper.getAllTasksFromDay(readableDb, day, weekDays[dayOfWeek]);
+            System.out.println(tasksList);
         }
         catch (Exception e)
         {
@@ -166,3 +308,5 @@ public class TaskListFragment extends ListFragment {
         void onFragmentInteraction(Uri uri);
     }
 }
+
+

@@ -14,4 +14,11 @@
         android:orderInCategory="100"
         android:title="@string/deleteTask"
         app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/delete_all_tasks"
+        android:icon="@drawable/ic_account"
+        android:orderInCategory="100"
+        android:title="@string/deleteAllTasks"
+        app:showAsAction="never"/>
 </menu>

@@ -49,6 +49,7 @@
     <string name="dontSetDeadline">Ви не встановили дату дедлайну</string>
     <string name="sameGoalExists">Така ціль вже є</string>
     <string name="cantDeleteGoalException">Проблема з видаленнням цілі. Спробуйте пізніше</string>
+    <string name="cantDeleteException">Проблема з видаленнням. Спробуйте пізніше</string>
 
     <string name="taskAddSuccessfully">Завдання успішно додано</string>
     <string name="taskEditSuccessfully">Завдання оновлено додано</string>
@@ -77,6 +78,8 @@
     <string name="doneGoalsTab">Досягнуті</string>
     <string name="inProgressGoalsTab">В процесі</string>
 
+    <string name="youReallyWantDeleteTaskInAllDays">Ви дійсно хочете видалити це завдання у всі дні?</string>
+
     <!-- Months for DoneGoalList -->
     <string name="January">Січня</string>
     <string name="February">Лютого</string>
@@ -92,7 +95,14 @@
     <string name="December">Грудня</string>
 
     <string name="editTask">Редагувати</string>
-    <string name="deleteTask">Видалити</string>
+    <string name="deleteTask">Видалити в цей день</string>
+    <string name="deleteAllTasks">Видалити у всі дні</string>
+
+
+    <!-- Values for Spinner -->
+    <string name="todaysTasks">Завдання на сьогодні</string>
+    <string name="tomorrowsTasks">Завдання на завтра</string>
+    <string name="chooseDay">Вибрати день</string>
 
 
     <!-- TODO: Remove or change this placeholder text -->

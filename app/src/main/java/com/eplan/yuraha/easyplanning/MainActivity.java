@@ -33,30 +33,13 @@ public class MainActivity extends BaseActivity implements
         final View contentView = inflater.inflate(R.layout.activity_main, null, false);
         drawer.addView(contentView, 0);
 
-
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        TaskListFragment taskFragment = new TaskListFragment(this);//create new fragment
+        TaskListFragment taskFragment = new TaskListFragment(this, fab);//create new fragment
         Bundle bundle = new Bundle();
-        bundle.putString("id", "1");//create data for sending with fragment
-        taskFragment.setArguments(bundle);// sending is
         ft.replace(R.id.addTaskFrame, taskFragment, "fr1");
         ft.addToBackStack("fr1");
         ft.commit();
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                AddTaskFragment taskFragment = new AddTaskFragment();//create new fragment
-                Bundle bundle = new Bundle();
-                bundle.putString("id", "1");//create data for sending with fragment
-                taskFragment.setArguments(bundle);// sending is
-                ft.replace(R.id.addTaskFrame, taskFragment, "fr1");
-                ft.addToBackStack("fr2");
-                ft.commit();
-            }
-        });
 
 
     }
@@ -81,11 +64,6 @@ public class MainActivity extends BaseActivity implements
 
     }
 
-
-   public void callAddTaskFragment(int position, long taskId)
-   {
-
-   }
 
 
     @Override

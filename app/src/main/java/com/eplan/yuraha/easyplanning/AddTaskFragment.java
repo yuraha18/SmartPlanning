@@ -16,12 +16,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -31,11 +33,15 @@ import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -58,7 +64,7 @@ public class AddTaskFragment extends Fragment {
     /* Variables keep information about new task
     * selected by user
     * will be send to DB*/
-    private EditText taskText;
+    private AutoCompleteTextView taskText;
     private int priority = 1;
     private ArrayList<String> chosenDays;
     private String dayFromCalendar;
@@ -74,7 +80,7 @@ public class AddTaskFragment extends Fragment {
     * else delete old data from thee and add updated*/
     private  boolean isToggleEdit;
 
-    private String dateFormat = "dd-MM-yyyy";
+    private static String dateFormat = "dd-MM-yyyy";
 
     private String lowPriority;
     private String middlePriority;
@@ -87,9 +93,9 @@ public class AddTaskFragment extends Fragment {
 
     private boolean isEdit;
 
-    private ArrayList<String> weekDays;
+    private static ArrayList<String> weekDays;
 
-    {
+    static {
         weekDays = new ArrayList<>();
         weekDays.add("");// In android weeks start in Sunday
         weekDays.add("Sunday");
@@ -203,6 +209,8 @@ private View view;//link on main view
         view = inflater.inflate(R.layout.fragment_add_task, container, false);
         initializeAllToggles();// add OnClick events for all dayToggles
 
+        calledDay = getArguments().getString("calledDay");
+
         SPDatabase db = new SPDatabase(getActivity());
         writableDb = db.getWritableDatabase();
         readableDb = db.getReadableDatabase();
@@ -247,7 +255,10 @@ setRememberTimeOnClick(v);
         });
 
 
-         taskText = (EditText) view.findViewById(R.id.taskName);
+         taskText = (AutoCompleteTextView) view.findViewById(R.id.taskName);
+        List<String> allTasks = DBHelper.getAllTasksForAutoComplete(readableDb);
+        ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, allTasks);
+        taskText.setAdapter(autoCompleteAdapter);
 
         ImageButton buttonOpenCalendar = (ImageButton) view.findViewById(R.id.buttonOpenCalendar);
         buttonOpenCalendar.setOnClickListener(new View.OnClickListener() {
@@ -263,7 +274,7 @@ setRememberTimeOnClick(v);
         isEdit = getArguments().getBoolean("isEdit");
         if (isEdit)
         {
-            calledDay = getArguments().getString("calledDay");
+
            final String taskId = getArguments().getString("taskID");
             fillInViewByDataFromDB(taskId);
             buttonDone.setOnClickListener(new View.OnClickListener() {
@@ -302,7 +313,7 @@ setRememberTimeOnClick(v);
                 checkedGoals+= goal +"|";
 
             remindTime = DBHelper.getRemindTimeForTaskId(readableDb, taskId);
-            System.out.println(remindTime);
+
             setTimeFromString(remindTime);
             remindTone = DBHelper.getRemindToneForTaskId(readableDb, taskId);
 
@@ -419,9 +430,10 @@ setRememberTimeOnClick(v);
         try {
             DateFormat formatter = new SimpleDateFormat(dateFormat);
             Date date = formatter.parse(day);
-
+            System.out.println(dateFormat);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
+
             return calendar.get(Calendar.DAY_OF_WEEK);
         }
 
@@ -481,6 +493,7 @@ setRememberTimeOnClick(v);
        if (!getTaskDataFromViews())
            return;
 
+        System.out.println("chosen days" + chosenDays);
         /*If there are the same task in this day we prevent user and come out */
 boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.getText().toString(), chosenDays, null);
         if (checkTaskInDB)
@@ -492,6 +505,8 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
         List<String> checkedGoalsList = new ArrayList<>();
         if (checkedGoals.length() > 0)
         checkedGoalsList = moveFromStringToList(checkedGoals);//i wanna send to DB list of goals, not string
+
+        chosenDays = new ArrayList<>(new LinkedHashSet<>(chosenDays));// delete duplicates in list, if exists
         /* Adding new task
         * if something was wrong: show message for user and come out*/
       boolean isTaskAdded =  DBHelper.addTask(writableDb, taskText.getText().toString(), priority, chosenDays, checkedGoalsList, remindTime, remindTone);
@@ -527,7 +542,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
       * for adding to DB*/
     private boolean getTaskDataFromViews() {
 
-        taskText = (EditText) view.findViewById(R.id.taskName);
+
         if (!taskTextValidator(taskText, getContext()))
             return false;
 
@@ -538,7 +553,6 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
             repeatEveryWeek = isRepeatingCheckBox.isChecked();
 
             parseInfoFromDaysToggles();//here we are calling method getting information from toggles and adding it to ArrayList
-
 
         }
         catch (ExceptionInInitializerError e)
@@ -581,11 +595,17 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
         {
 
         }
+        /* add called day like first day, it will be added to repeating table with others and to lifecycle table alone like FROMday
+         * call only for AddTask */
+       if (!isEdit)
+        chosenDays.add(0, calledDay);
 
     }
 
     private void daysFromToggle() {
         Calendar calendar = Calendar.getInstance();
+        Date date = getCalledDay();
+        calendar.setTime(date);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);// get today's day of week (1 is Sunday)
         int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);// get today's day of year (51 is 20 February)
         chosenDays.clear();
@@ -622,6 +642,17 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, taskText.g
             }
         }
 
+    }
+
+    private Date getCalledDay() {
+        Date date = new Date();
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+            date = formatter.parse(calledDay);
+        }
+        catch (Exception e){}
+
+        return date;
     }
 
 
@@ -788,6 +819,38 @@ private void setToneOnClick(View v)
         mListener = null;
     }
 
+
+    public static String getEarliestDay(ArrayList<String> dates) {
+
+dates.removeAll(weekDays);// i must remove all weekDays (Monday, Sunday...) from list because in comparing they will be cause of Exceptions
+
+            Collections.sort(dates, new Comparator<String>() {
+                @Override
+                public int compare(String day1, String day2) {
+                    return compareTwoDates(day1, day2);
+                }
+            });
+
+        return dates.get(0);
+
+    }
+
+public static int compareTwoDates (String day1, String day2)
+{
+    int result = 0;
+    Date date1;
+    Date date2;
+    try {
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+        date1 = formatter.parse(day1);
+        date2 = formatter.parse(day2);
+        result =  date1.compareTo(date2);
+    }
+    catch (ParseException e){
+    }
+
+    return result;
+}
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name

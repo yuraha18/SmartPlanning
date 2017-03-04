@@ -52,7 +52,6 @@ GoalListsFragment.OnFragmentInteractionListener,
         drawer.addView(contentView, 0);
 
 
-
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         goalListsFragment = new GoalListsFragment(appBarLayout, this);//create new fragment
         ft.add(R.id.addGoalFrame, goalListsFragment, "goalsList");
