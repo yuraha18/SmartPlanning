@@ -104,6 +104,8 @@
     <string name="tomorrowsTasks">Завдання на завтра</string>
     <string name="chooseDay">Вибрати день</string>
 
+    <string name="goodJob">Молодець. Чудова робота</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>

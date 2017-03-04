@@ -125,8 +125,42 @@ public void setNewData(ArrayList<Task> list)
         else
             isDone.setColorFilter(ContextCompat.getColor(context,R.color.highPriority));
 
+
        tagContainerLayout.setTags(task.getGoals());
-        setOnClickListenerForMoreButton(position);
+
+        String todaysDay = parentFragment.getTodaysDay();
+        String dayFromSpinner = parentFragment.getDayFromSpinner();
+
+        if (AddTaskFragment.compareTwoDates(dayFromSpinner, todaysDay) >= 0) {// if dayromspinner is higher or same for Todays
+            setOnClickListenerForMoreButton(position);
+            setOnClickListenerForIsDoneButton(position);
+            moreButton.setVisibility(View.VISIBLE);
+        }
+        else
+            moreButton.setVisibility(View.INVISIBLE);
+    }
+
+    private void setOnClickListenerForIsDoneButton(final int position) {
+        isDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               long taskId = tasksList.get(position).getId();
+
+                if (DBHelper.isInDoneTasksTable(readableDb, taskId, parentFragment.getDayFromSpinner()))
+                {
+                    DBHelper.deleteFromDoneTasks(readableDb, taskId, parentFragment.getDayFromSpinner());
+                    isDone.setColorFilter(ContextCompat.getColor(context,R.color.highPriority));
+                }
+                else
+                {
+                    DBHelper.addToDoneTasks(readableDb, taskId, parentFragment.getDayFromSpinner());
+                    isDone.setColorFilter(ContextCompat.getColor(context,R.color.lowPriority));
+                    Toast.makeText(activity, activity.getResources().getString(R.string.goodJob), Toast.LENGTH_SHORT).show();
+                }
+
+                updateListView();
+            }
+        });
     }
 
     private void setOnClickListenerForMoreButton(final int position) {

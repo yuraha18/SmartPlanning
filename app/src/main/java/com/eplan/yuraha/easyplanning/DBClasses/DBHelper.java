@@ -9,7 +9,11 @@ import android.database.sqlite.SQLiteException;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
 import com.eplan.yuraha.easyplanning.ListAdapters.Task;
+
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -39,8 +43,10 @@ try {
     addToTaskToGoalTable(db, taskID, checkedGoals);
 
     //create new row in TaskLifecycleTable where first day from list will be FROM_DAY
-    if (chosenDays.size()>1)
+    if (chosenDays.size()>=1) {
         addToTaskLifecycleTable(db, taskID, chosenDays);
+
+    }
 }
 catch (SQLiteException e)
 {return false;}
@@ -148,7 +154,41 @@ tasks.add(taskText);
 
     }
 
+    public static boolean isInDoneTasksTable(SQLiteDatabase db, long taskId, String day)
+    {
+        long dayId = addToDateTable(db, day);
+        Cursor cursor = db.query ("DoneTasks",
+                new String[] {"_id"},
+                "TASK_ID = ? AND DAY_ID = ?",
+                new String[] {taskId+"", dayId+""},
+                null, null,null);
 
+        if (cursor.moveToFirst())
+            return true;
+
+
+        return false;
+    }
+
+    public static void deleteFromDoneTasks(SQLiteDatabase db, long taskId, String day)
+    {
+        long dayId = addToDateTable(db, day);
+        int count = db.delete("DoneTasks", "TASK_ID" + " = ?" + " AND DAY_ID" + " = ?", new String[] { taskId+"", dayId+"" });
+    }
+
+    public static void addToDoneTasks(SQLiteDatabase db, long taskId, String day)
+    {
+        if (isInDoneTasksTable(db, taskId,day ))
+            return;
+
+        long dayId = addToDateTable(db, day);
+        ContentValues value = new ContentValues();
+            value.put("TASK_ID", taskId);
+            value.put("DAY_ID", dayId);
+            long id = db.insert("DoneTasks", null, value);
+            value.clear();
+
+    }
 
     private static void updateTaskDayFromInLifecycleTable(SQLiteDatabase db, String taskID, String earliestDay) {
 
@@ -334,60 +374,73 @@ String dayFromId= getDayFromId(db, earliestDay);
 
     /* This one try to get task id by his text
     * if there are no one task with the same text we return -1*/
-    public static long getTaskIDByString(SQLiteDatabase db, String taskName) throws SQLiteException
+    public static ArrayList<Long> getTaskIDByString(SQLiteDatabase db, String taskName) throws SQLiteException
     {
+    ArrayList<Long> idList = new ArrayList<>();
         Cursor cursor = db.query ("Tasks",
                 new String[] {"_id"},
                 "TASK_TEXT = ?",
                 new String[] {taskName},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getLong(0);
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                idList.add(cursor.getLong(0));
+                cursor.moveToNext();
+            }
+        }
 
-
-        return -1;
+        return idList;
     }
 
     /* Must be changed in future*/
     public static boolean isTaskNameExistInThisDay(SQLiteDatabase db, String taskName, ArrayList<String> days, String sendedTaskId) throws SQLiteException
     {
-        long taskID = getTaskIDByString(db, taskName);
-        if (taskID==-1)
+        ArrayList<Long> taskIdList = getTaskIDByString(db, taskName);
+        if (taskIdList.isEmpty())
             return false;
 
-        for (String day : days) {
-            long dayID = addToDateTable(db, day);
-            if (dayID == -1)
-                return false;
+        for (Long taskID : taskIdList) {
+            for (String day : days) {
 
-            Cursor cursor = db.query("Repeating",
-                    new String[]{"_id"},
-                    "TASK_ID = ? AND DAY_ID = ?",
-                    new String[]{taskID + "", dayID + ""},
-                    null, null, null);
+                long dayID = addToDateTable(db, day);
 
-            if (cursor.moveToFirst() )
-            {
-                // code bellow for checking tasks while its editing
-                if (sendedTaskId!=null)
-                {
-                    if (sendedTaskId.equals(taskID+""))
-                        return false;
+                if (isInRepeatingTable(db, dayID, taskID)) {
 
-                    else
-                    {
-                        return isInDeletedTable(db, taskID, dayID);// task could be deleted from this day, if its true you can add the same
+                    if (sendedTaskId != null) {
+
+                        if (!sendedTaskId.equals(taskID + "")) {
+                            return true;
+                        }
+                        else
+                            break;
                     }
 
+                    else
+                    if (!isInDeletedTable(db, taskID, dayID)) {// task could be deleted from this day, if its true you can add the same
+                        return true;
+                    }
                 }
-                return true;
-
             }
         }
 
         return false;
     }
+
+    public static boolean isInRepeatingTable(SQLiteDatabase db, long dayID, long taskID)
+    {
+        Cursor cursor = db.query("Repeating",
+                new String[]{"_id"},
+                "TASK_ID = ? AND DAY_ID = ?",
+                new String[]{taskID + "", dayID + ""},
+                null, null, null);
+
+        if (cursor.moveToFirst() )
+        return true;
+
+        return false;
+    }
+
 
     public static boolean isGoalExist(SQLiteDatabase db, String goalName) throws SQLiteException
     {
@@ -662,7 +715,8 @@ String dayFromId= getDayFromId(db, earliestDay);
 
     public static ArrayList<Task> getAllTasksFromDay(SQLiteDatabase db, String day, String dayOfWeek)
     {
-      ArrayList<Task> tasksList = new ArrayList<>();
+      ArrayList<Task> inProgressTasks = new ArrayList<>();
+        ArrayList<Task> doneTasks = new ArrayList<>();
 
         long dayID = addToDateTable(db, day);
         long dayOfWeekId = addToDateTable(db, dayOfWeek);
@@ -673,19 +727,38 @@ String dayFromId= getDayFromId(db, earliestDay);
         {
             String taskText = getTaskTextFromId(db, taskId+"");
             int priority = getTaskPriorityFromID(db, taskId);
-            boolean isDone = isTaskDone(db, taskId);
+            boolean isDone = isInDoneTasksTable(db, taskId, day);
             ArrayList<String> goals = getTaskGoals(db, taskId+"");
             Task task = new Task(taskId, taskText, priority, isDone, goals);
 
             // if task is done put it to the end of list (and listView). If now done - to the top
             if (isDone)
-                tasksList.add(task);
+                doneTasks.add(task);
             else
-                tasksList.add(0, task);
+                inProgressTasks.add(task);
 
         }
 
-        return tasksList;
+        doneTasks = sortTaskList(doneTasks);// sort list
+        inProgressTasks = sortTaskList(inProgressTasks);// sort list
+
+        inProgressTasks.addAll(doneTasks);//merge two lists
+
+        return inProgressTasks;
+    }
+
+    private static ArrayList<Task> sortTaskList(ArrayList<Task> taskList) {
+        Collections.sort(taskList, new Comparator<Task>() {
+            @Override
+            public int compare(Task task1, Task task2) {
+                int priority1 = task1.getPriority();
+                int priority2 = task2.getPriority();
+
+                return priority1 == priority2 ? 0 : priority1 > priority2 ? -1 : 1;
+            }
+        });
+
+        return taskList;
     }
 
     private static ArrayList<Long> getTasksListFromRepeatingTable(SQLiteDatabase db, long dayID, long dayOfWeekId) {
@@ -860,18 +933,6 @@ String dayFromId= getDayFromId(db, earliestDay);
     }
 
 
-    public static boolean isTaskDone(SQLiteDatabase db, Long taskId) {
-        Cursor cursor = db.query ("DoneTasks",
-                new String[] {"_id"},
-                "TASK_ID = ?",
-                new String[] {taskId+""},
-                null, null,null);
-
-        if (cursor.moveToFirst())
-            return true;
-
-        return false;
-    }
 
     public static int getTaskPriorityFromID(SQLiteDatabase db, Long taskId) {
         Cursor cursor = db.query ("Tasks",
@@ -903,11 +964,13 @@ String dayFromId= getDayFromId(db, earliestDay);
 
 
     private static boolean isBetweenDayFromDayTo(SQLiteDatabase db, long taskId, long dayID) {
-        try {
+       try {
             String dayFrom = getDayFromByTaskId(db, taskId+"");
-            String dayTo = getDayToByTaskId(db, taskId+"");
 
+            String dayTo = getDayToByTaskId(db, taskId+"");
             String taskDay = getDayFromId(db, dayID+"");
+
+
 
         /* method compareTwoDates return:
         * -1 if right variable is higher
@@ -992,7 +1055,6 @@ String dayFromId= getDayFromId(db, earliestDay);
             value.put("TASK_ID", taskId);
             value.put("DAY_ID", dayID);
 
-            System.out.println(taskId + " : " + dayID);
             long id = db.insert("DeletedTasks", null, value);
 
             if (id < 0)

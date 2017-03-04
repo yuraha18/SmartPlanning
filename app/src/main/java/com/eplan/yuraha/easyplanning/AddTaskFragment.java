@@ -257,6 +257,7 @@ setRememberTimeOnClick(v);
 
          taskText = (AutoCompleteTextView) view.findViewById(R.id.taskName);
         List<String> allTasks = DBHelper.getAllTasksForAutoComplete(readableDb);
+        allTasks = new ArrayList<>(new LinkedHashSet<>(allTasks));// delete duplicates in list, if exists
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, allTasks);
         taskText.setAdapter(autoCompleteAdapter);
 

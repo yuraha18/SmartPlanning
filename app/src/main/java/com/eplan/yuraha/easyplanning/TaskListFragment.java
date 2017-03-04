@@ -256,9 +256,8 @@ insertDayFromSpinnerInAdapter();
         try {
 
             int dayOfWeek = AddTaskFragment.getDayOfWeek(day, dateFormat);
-
+            System.out.println(day);
             tasksList = DBHelper.getAllTasksFromDay(readableDb, day, weekDays[dayOfWeek]);
-            System.out.println(tasksList);
         }
         catch (Exception e)
         {
