@@ -23,8 +23,12 @@
         <activity
             android:name=".GoalsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".AddGoalActivity"
-            android:theme="@style/AppTheme.NoActionBar" ></activity>
+        <activity
+            android:name=".AddGoalActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            ></activity>
     </application>
 
 </manifest>

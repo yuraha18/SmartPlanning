@@ -1,6 +1,7 @@
 package com.eplan.yuraha.easyplanning;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -21,7 +22,8 @@ import android.view.View;
  */
 
 public class BaseActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener
+{
 
     protected DrawerLayout drawer;
     protected Toolbar toolbar;
@@ -89,12 +91,16 @@ appBarLayout =  (AppBarLayout) findViewById(R.id.appBar);
         if (id == R.id.nav_statistic) {
             // Handle the camera action
         } else if (id == R.id.nav_settings) {
+            Intent intent = new Intent(BaseActivity.this, SettingsActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_goals) {
             Intent intent = new Intent(BaseActivity.this, GoalsActivity.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_history) {
+        } else if (id == R.id.go_to_my_tasks) {
+            Intent intent = new Intent(BaseActivity.this, MainActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_about_us) {
 
@@ -104,4 +110,6 @@ appBarLayout =  (AppBarLayout) findViewById(R.id.appBar);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 }

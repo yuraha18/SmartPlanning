@@ -3,9 +3,9 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_statistic"
+            android:id="@+id/go_to_my_tasks"
             android:icon="@drawable/ic_account"
-            android:title="@string/nav_statistic" />
+            android:title="@string/my_tasks" />
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
@@ -15,9 +15,9 @@
             android:icon="@drawable/ic_goals"
             android:title="@string/nav_goals" />
         <item
-            android:id="@+id/nav_history"
-            android:icon="@drawable/ic_history"
-            android:title="@string/nav_history" />
+            android:id="@+id/nav_statistic"
+            android:icon="@drawable/ic_account"
+            android:title="@string/nav_statistic" />
 
         <item
             android:id="@+id/nav_about_us"

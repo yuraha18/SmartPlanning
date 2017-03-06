@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content">
+
+    <PreferenceCategory
+        android:title="@string/pref_group_notifications"
+        android:key="pref_key_notifications">
+
+        <CheckBoxPreference
+        android:title="@string/pref_turn_on_notifications"
+        android:key="pref_turn_on_notifications"
+        android:defaultValue="true" />
+
+        <RingtonePreference
+            android:dependency="pref_turn_on_notifications"
+            android:defaultValue=""
+            android:title="@string/pref_tone"
+            android:key="pref_tone" />
+
+        <SwitchPreference
+            android:dependency="pref_turn_on_notifications"
+            android:defaultValue="true"
+            android:title="@string/pref_vibration"
+            android:key="pref_vibration" />
+
+        <CheckBoxPreference
+            android:dependency="pref_turn_on_notifications"
+            android:defaultValue="true"
+            android:title="@string/pref_remind_about_planning"
+            android:key="pref_remind_about_planning"
+            android:textSize="8sp" />
+
+        <com.eplan.yuraha.easyplanning.TimePreference
+            android:dependency="pref_remind_about_planning"
+            android:key="pref_set_time"
+            android:textSize="20px"
+            android:title="@string/pref_set_time" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_group_system"
+        android:key="pref_group_system">
+
+        <ListPreference
+            android:key="pref_language"
+            android:title="@string/pref_language"
+            android:dialogTitle="@string/pref_choose_language"
+            android:entries="@array/languages_array"
+            android:defaultValue="@array/languages_array_values"
+            android:entryValues="@array/languages_array_values"/>
+
+        <ListPreference
+            android:key="pref_theme"
+            android:title="@string/pref_theme"
+            android:dialogTitle="@string/pref_choose_theme"
+            android:summary="@string/pref_check_out"
+            android:entryValues="@array/themes_array_values"
+            android:entries="@array/themes_array" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_group_other"
+        android:key="pref_group_other">
+
+        <Preference
+            android:key="pref_help"
+            android:title="@string/pref_help" />
+
+        <Preference
+            android:key="pref_check_out"
+            android:title="@string/pref_check_out" />
+    </PreferenceCategory>
+</PreferenceScreen>

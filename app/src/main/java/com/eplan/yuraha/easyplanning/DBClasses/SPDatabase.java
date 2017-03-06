@@ -94,6 +94,18 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "DAY_FROM_ID INTEGER, "
                 + "DAY_TO_ID INTEGER);");
 
+        /* Tables with Preferences. Will be using with Preferences*/
+        db.execSQL("CREATE TABLE Preference("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "LANGUAGE INTEGER, "
+                + "THEME INTEGER, "
+                + "IS_SET_NOTIFICATION INTEGER, "
+                + "RINGTONE TEXT, "
+                + "VIBRATION INTEGER, "
+                + "IS_SET_REMIND_TIME INTEGER, "
+                + "REMIND_TIME TEXT);");
+
+
         addDayToDB(db, "Sunday");
         addDayToDB(db, "Monday");
         addDayToDB(db, "Tuesday");
@@ -102,9 +114,24 @@ public class SPDatabase extends SQLiteOpenHelper {
         addDayToDB(db, "Friday");
         addDayToDB(db, "Saturday");
 
+        setPreferencesDefaultValues(db);
+
 
 
     }
+
+    private void setPreferencesDefaultValues(SQLiteDatabase db) {
+        ContentValues value = new ContentValues();
+        value.put("RINGTONE", "content://settings/system/notification_sound");
+        value.put("VIBRATION", 1);
+        value.put("IS_SET_REMIND_TIME", 1);
+        value.put("REMIND_TIME", "22:00");
+        value.put("LANGUAGE", 2);
+        value.put("THEME", 1);
+        value.put("IS_SET_NOTIFICATION", 1);
+        db.insert("Preference", null, value);
+    }
+
 
     private void addDayToDB(SQLiteDatabase db, String day) {
         ContentValues value = new ContentValues();

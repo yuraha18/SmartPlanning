@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteException;
 
 
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
+import com.eplan.yuraha.easyplanning.Constants;
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
 import com.eplan.yuraha.easyplanning.ListAdapters.Task;
 
@@ -1084,6 +1085,18 @@ return true;
 
        return true;
     }
+
+    /* Here you can update rows in Preference and Notification tables*/
+    public static void updatePreferences(SQLiteDatabase db, String table, String tableRow, String value, long id)
+    {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(tableRow, value);
+
+        db.update(table, contentValues, Constants.DB_TABLE_ID + " = ?",
+                new String[] { id+"" });
+    }
+
+
 }
 
 

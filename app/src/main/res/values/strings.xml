@@ -6,7 +6,7 @@
     <string name="navigation_drawer_close">Закрите навігаційне меню</string>
     <string name="nav_statistic">Моя статистика</string>
     <string name="nav_goals">Мої цілі</string>
-    <string name="nav_history">Історія</string>
+    <string name="my_tasks">Мої завдання</string>
     <string name="nav_about_us">Про нас</string>
     <string name="account_email">yura.yush@gmail.com</string>
 
@@ -105,6 +105,75 @@
     <string name="chooseDay">Вибрати день</string>
 
     <string name="goodJob">Молодець. Чудова робота</string>
+
+
+    <!-- Values for preferences (settings) -->
+    <string name="get_premium">Отримати преміум</string>
+
+    <string name="pref_group_system">Система</string>
+    <string name="pref_language">Мова</string>
+    <string name="pref_choose_language">Оберіть мову</string>
+    <string name="pref_theme">Тема</string>
+    <string name="pref_choose_theme">Оберіть тему</string>
+    
+    <string name="pref_group_notifications">Сповіщення</string>
+    <string name="pref_turn_on_notifications">Ввімкнути сповіщення</string>
+    <string name="pref_tone">Мелодія</string>
+    <string name="pref_choose_tone">Оберіть мелодію</string>
+    <string name="pref_vibration">Вібрація</string>
+    <string name="pref_remind_about_planning">Нагадування про планування дня</string>
+    <string name="pref_set_time">Встановіть час</string>
+
+    <string name="pref_group_other">Інше</string>
+    <string name="pref_help">Допомога</string>
+    <string name="pref_check_out">Вийти</string>
+
+    <string-array name="tones_array">
+        <item>Alarm 1</item>
+        <item>Alarm 2</item>
+        <item>Alarm 3</item>
+        <item>Alarm 4</item>
+        <item>Alarm 5</item>
+    </string-array>
+
+    <string-array name="languages_array">
+        <item>Англійська</item>
+        <item>Українська</item>
+        <item>Російська</item>
+        <item>Французька</item>
+        <item>Deutsche</item>
+    </string-array>
+
+    <string-array name="themes_array">
+        <item>Синя</item>
+        <item>Зелена</item>
+        <item>Червона</item>
+        <item>Рожева</item>
+    </string-array>
+
+
+    <string-array name="tones_array_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="languages_array_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="themes_array_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
 
 
     <!-- TODO: Remove or change this placeholder text -->

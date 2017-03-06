@@ -2,8 +2,13 @@ package com.eplan.yuraha.easyplanning;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +18,8 @@ import android.view.View;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+
+import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 
 public class MainActivity extends BaseActivity implements
         PopupMenu.OnMenuItemClickListener,
@@ -32,6 +39,7 @@ public class MainActivity extends BaseActivity implements
 
         final View contentView = inflater.inflate(R.layout.activity_main, null, false);
         drawer.addView(contentView, 0);
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
