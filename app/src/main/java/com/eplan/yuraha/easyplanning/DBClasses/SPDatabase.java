@@ -5,6 +5,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.eplan.yuraha.easyplanning.AddTaskFragment;
+import com.eplan.yuraha.easyplanning.TaskListFragment;
+
 /**
  * Created by Yura on 16.02.2017.
  */
@@ -105,7 +108,15 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "IS_SET_REMIND_TIME INTEGER, "
                 + "REMIND_TIME TEXT);");
 
+        /* Table with statistic information */
+        db.execSQL("CREATE TABLE Statistic("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "DAY_ID INTEGER, "
+                + "COUNT_DONE INTEGER, "
+                + "COUNT_IN_PROGRESS INTEGER);");
 
+
+        DBHelper.addToDateTable(db, TaskListFragment.getTodaysDay());//save day creating app
         addDayToDB(db, "Sunday");
         addDayToDB(db, "Monday");
         addDayToDB(db, "Tuesday");

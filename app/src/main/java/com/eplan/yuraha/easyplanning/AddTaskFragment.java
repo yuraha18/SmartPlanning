@@ -80,7 +80,7 @@ public class AddTaskFragment extends Fragment {
     * else delete old data from thee and add updated*/
     private  boolean isToggleEdit;
 
-    private static String dateFormat = "dd-MM-yyyy";
+    private static final String dateFormat = "dd-MM-yyyy";
 
     private String lowPriority;
     private String middlePriority;

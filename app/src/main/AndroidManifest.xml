@@ -26,9 +26,12 @@
         <activity
             android:name=".AddGoalActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".SettingsActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            ></activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity android:name=".StatisticActivity"
+            android:theme="@style/AppTheme.NoActionBar" ></activity>
     </application>
 
 </manifest>

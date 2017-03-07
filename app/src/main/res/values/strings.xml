@@ -50,6 +50,8 @@
     <string name="sameGoalExists">Така ціль вже є</string>
     <string name="cantDeleteGoalException">Проблема з видаленнням цілі. Спробуйте пізніше</string>
     <string name="cantDeleteException">Проблема з видаленнням. Спробуйте пізніше</string>
+    <string name="youMustSetFromDateBefore">Спочатку встановіть дату з</string>
+    <string name="setDatesFirstly">Спочатку встановіть дати</string>
 
     <string name="taskAddSuccessfully">Завдання успішно додано</string>
     <string name="taskEditSuccessfully">Завдання оновлено додано</string>
@@ -115,7 +117,7 @@
     <string name="pref_choose_language">Оберіть мову</string>
     <string name="pref_theme">Тема</string>
     <string name="pref_choose_theme">Оберіть тему</string>
-    
+
     <string name="pref_group_notifications">Сповіщення</string>
     <string name="pref_turn_on_notifications">Ввімкнути сповіщення</string>
     <string name="pref_tone">Мелодія</string>
@@ -176,11 +178,22 @@
     </string-array>
 
 
+    <!-- Values for Statistic Activity-->
+    <string name="statisticFromAllDays">Всього</string>
+    <string name="countDoneTasks">Балів за виконані завдання </string>
+    <string name="countInProgressTasks">Не отримано балів </string>
+    <string name="productivity">Продуктивність </string>
+    <string name="productivityInPeriod">Статистика за період </string>
+    <string name="from">З</string>
+    <string name="to">По</string>
+    <string name="showStatistic">Переглянути статистику</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>
     <string name="goals_dialog_frag_tones">Виберіть цілі</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_statistic">StatisticActivity</string>
 
 </resources>

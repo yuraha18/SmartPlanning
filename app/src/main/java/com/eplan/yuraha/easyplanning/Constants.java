@@ -25,4 +25,6 @@ public final class Constants {
     public static final String DB_NOTIF_IS_SET_REMINDTIME = "IS_SET_REMIND_TIME";
     public static final String DB_NOTIF_REMIND_TIME = "REMIND_TIME";
 
+    public static final String DATEFORMAT = "dd-MM-yyyy";
+
 }

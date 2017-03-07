@@ -241,7 +241,7 @@ insertDayFromSpinnerInAdapter();
     }
 
 
-    public String getTodaysDay() {
+    public static String getTodaysDay() {
         final Calendar calendar = Calendar.getInstance();
         int mYear = calendar.get(Calendar.YEAR);
         int  mMonth = calendar.get(Calendar.MONTH);

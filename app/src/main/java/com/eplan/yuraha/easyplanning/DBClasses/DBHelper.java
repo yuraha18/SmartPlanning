@@ -8,8 +8,10 @@ import android.database.sqlite.SQLiteException;
 
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.Constants;
+import com.eplan.yuraha.easyplanning.DayStatistic;
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
 import com.eplan.yuraha.easyplanning.ListAdapters.Task;
+import com.eplan.yuraha.easyplanning.StatisticActivity;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -762,7 +764,98 @@ String dayFromId= getDayFromId(db, earliestDay);
         return taskList;
     }
 
-    private static ArrayList<Long> getTasksListFromRepeatingTable(SQLiteDatabase db, long dayID, long dayOfWeekId) {
+    /* First id in Days table is day when app was created
+    * here i'm getting this day*/
+    public static String getCreatingDay(SQLiteDatabase db) throws SQLiteException
+    {
+        String id = "1";
+        Cursor cursor = db.query ("Days",
+                new String[] {"DAY"},
+                "_id = ?",
+                new String[] {id},
+                null, null,null);
+
+        if (cursor .moveToFirst())
+            return cursor.getString(0);
+
+         throw new SQLiteException();
+
+
+    }
+
+    public static DayStatistic getStatisticForDay(SQLiteDatabase db, String day)
+    {
+        long dayId = getDayFromString(db, day);
+
+        // -1 means that day is absent in dayTable, thats why there are no one tasks for this day. That's why it returns empty object
+        if (dayId==-1)
+            return new DayStatistic(0, 0);
+
+
+        Cursor cursor = db.query ("Statistic",
+                new String[] {"COUNT_DONE", "COUNT_IN_PROGRESS"},
+                "DAY_ID = ?",
+                new String[] {dayId+""},
+                null, null,null);
+
+        if (cursor .moveToFirst())
+        {
+          int countDone = cursor.getInt(0);
+            int counInProgress = cursor.getInt(1);
+            return new DayStatistic(countDone, counInProgress);
+        }
+        else
+        {
+            DayStatistic dayStatistic = addDayToStatistic(db, day);
+            return dayStatistic;
+        }
+
+
+    }
+
+    public static DayStatistic addDayToStatistic(SQLiteDatabase db, String day)
+    {
+
+        long dayId = getDayFromString(db, day);
+        int dayOfWeek = AddTaskFragment.getDayOfWeek(day, Constants.DATEFORMAT);
+
+        //get all tasks for this day
+        ArrayList<Long> taskList = getTasksListFromRepeatingTable(db, dayId, dayOfWeek);
+
+        int countDone = 0, countInProgress = 0;
+        // here i'm counting done and in progress tasks for this day
+        for (Long taskId : taskList)
+        {
+            boolean isDone = isInDoneTasksTable(db, taskId, day);
+            int priority = getPriorityFromTaskId(db, taskId+"");
+            int countGoals = getTaskGoals(db, taskId+"").size() *2;// points for task. Every attached to it goal give to 2 points
+
+            // you cant get more than 4 point from goals (more than 2 goals not counting)
+            if (countGoals > 4)
+                countGoals =2;
+
+            // if any goal is not attach, count 1. Not 0, because bellow are multiplying
+            if (countGoals ==0)
+                countGoals = 1;
+
+            if (isDone)
+                countDone += (priority * countGoals);// it means that every task multiplies on its priority (1-3) and attached goals (1 goal = 2 points, but not more 4 points)
+
+            else
+                countInProgress += (priority * countGoals);// not done goals counting like done one
+        }
+
+        /* inserting information in DB*/
+        ContentValues value = new ContentValues();
+        value.put("DAY_ID", dayId);
+        value.put("COUNT_DONE", countDone);
+        value.put("COUNT_IN_PROGRESS", countInProgress);
+       // db.insert("Statistic", null, value);
+
+        return new DayStatistic(countDone, countInProgress);
+    }
+
+    public static ArrayList<Long> getTasksListFromRepeatingTable(SQLiteDatabase db, long dayID, long dayOfWeekId) {
        ArrayList<Long> list1 = getListFromRepeatingTable(db, dayID);// get tasks for single day
         ArrayList<Long> list2 = getListFromRepeatingTable(db, dayOfWeekId);// get repeating tasks for day
 

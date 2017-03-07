@@ -89,7 +89,8 @@ appBarLayout =  (AppBarLayout) findViewById(R.id.appBar);
         int id = item.getItemId();
 
         if (id == R.id.nav_statistic) {
-            // Handle the camera action
+            Intent intent = new Intent(BaseActivity.this, StatisticActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(BaseActivity.this, SettingsActivity.class);
             startActivity(intent);
