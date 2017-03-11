@@ -189,8 +189,9 @@ private String fromDate;
         int countDoneTasks = 0, countInProgressTasks=0;
         while (true)
         {
-
+            System.out.println(fromDay);
             DayStatistic day = DBHelper.getStatisticForDay(readableDb, fromDay);
+
            countDoneTasks += day.getCountDone();
             countInProgressTasks += day.getCountInProgress();
             fromDay = getPreviousDay(fromDay);

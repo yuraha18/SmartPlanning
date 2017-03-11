@@ -37,9 +37,9 @@ public class DialogFragmentForGoals extends DialogFragment {
         ArrayList<String> goalsList = DBHelper.getAllGoalsInProgress(readableDb);
         allGoals = goalsList.toArray(new String[goalsList.size()]);
 
-        Bundle mArgs = getArguments();
-        String myValue = mArgs.getString("checkedGoals");
-        final boolean[] checkedItemsArray = parseCheckedItems(myValue);
+        final ArrayList<String> checkedGoals = new ArrayList<>();
+
+        final boolean[] checkedItemsArray = parseCheckedItems();
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(getContext().getResources().getString(R.string.goals_dialog_frag_tones))
                 .setMultiChoiceItems(allGoals, checkedItemsArray,
@@ -55,20 +55,17 @@ public class DialogFragmentForGoals extends DialogFragment {
                             @Override
                             public void onClick(DialogInterface dialog,
                                                 int id) {
-                                StringBuilder state = new StringBuilder();
-                                int counter = 0;
+
                                 for (int i = 0; i < allGoals.length; i++) {
                                     if (checkedItemsArray[i])
-                                    state.append(allGoals[i]+"|");
+                                    checkedGoals.add(allGoals[i]);
 
                                 }
 
-                                /* Cut last ',' from goalsString for simpler parsing in ParentFragment  */
-                                if (state.length()>0)
-                                    state.setLength(state.length()-1);
-
                                 Intent intent = new Intent();
-                                intent.putExtra("value", state.toString());
+                                Bundle bundle = new Bundle();
+                                bundle.putStringArrayList("value", checkedGoals);
+                                intent.putExtras(bundle);
                               getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
                             }
                         })
@@ -89,15 +86,12 @@ public class DialogFragmentForGoals extends DialogFragment {
     /*This method get chosen  before goals
       * and check it in ListItem
        * */
-    private boolean[] parseCheckedItems(String value)
+    private boolean[] parseCheckedItems()
     {
+        ArrayList<String> checkedGoals = getArguments().getStringArrayList("checkedGoals");
         boolean[] checkItems = new boolean[allGoals.length];
-        if (value == null)
+        if (checkedGoals == null || checkedGoals.size() == 0)
             return checkItems;
-
-        String[] checkedGoalsArray = value.split("\\|");
-      List<String> checkedGoals =  Arrays.asList(checkedGoalsArray);
-
 
        for (int i =0; i < allGoals.length; i++)
        {

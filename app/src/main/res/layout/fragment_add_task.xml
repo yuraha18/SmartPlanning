@@ -13,7 +13,7 @@
         android:hint="Name"
         android:minLines="2"
         android:ems="20"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="100dp"
         android:id="@+id/taskName"
         android:scrollbars="vertical"/>
 
@@ -24,30 +24,20 @@
         android:layout_below="@id/taskName"
         />
 
-    <include layout="@layout/toggle_button_layout"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:id="@+id/toggleLayout"
-        android:layout_marginTop="138dp"/>
-
-    <CheckBox
-        android:text="Повторювати щотижня"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/setGoalsButton"
-        android:layout_alignEnd="@+id/setGoalsButton"
-        android:layout_marginRight="11dp"
-        android:layout_below="@id/toggleLayout"
-        android:layout_marginEnd="11dp"
-        android:layout_marginTop="10dp"
-        android:id="@+id/repeatEveryWeekCheckBox" />
+      <ImageButton
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/set_priority_spinner"
+          android:src="@drawable/repeat"
+          android:clickable="true"
+          android:id="@+id/repeatImageButton"
+          />
 
     <Button
         android:text="Прикріпити цілі"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/repeatEveryWeekCheckBox"
+        android:layout_below="@id/repeatImageButton"
         android:id="@+id/setGoalsButton"
         />
 
@@ -61,37 +51,27 @@
         android:id="@+id/setRememberTime"
         />
 
-
-    <Button
-        android:text="Мелодія"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/setRememberTime"
-        android:layout_alignLeft="@+id/setGoalsButton"
-        android:layout_alignStart="@+id/setGoalsButton"
-        android:layout_marginTop="22dp"
-        android:id="@+id/buttonSetTone" />
-
     <Button
         android:text="Готово"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/sendDataForAddTask"
         android:background="@color/colorPrimary"
-        android:layout_below="@+id/buttonSetTone"
-        android:layout_toRightOf="@+id/buttonSetTone"
-        android:layout_toEndOf="@+id/buttonSetTone"
+        android:layout_below="@+id/setRememberTime"
+        android:layout_toRightOf="@+id/setRememberTime"
+        android:layout_toEndOf="@+id/setRememberTime"
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp" />
 
     <TextView
-        android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/exampleText"
-        android:layout_above="@+id/setRememberTime"
-        android:layout_marginLeft="20dp"
-     android:layout_toRightOf="@id/setGoalsButton" />
+        android:id="@+id/repeatText"
+        android:text="@string/repeatText"
+        android:layout_above="@+id/setGoalsButton"
+        android:layout_toRightOf="@+id/repeatImageButton"
+        android:layout_toEndOf="@+id/repeatImageButton"
+        android:layout_marginBottom="11dp" />
 
 
 </RelativeLayout>

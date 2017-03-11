@@ -45,15 +45,19 @@ public class SPDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE Repeating ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER, "
-                + "DAY_ID INTEGER, "
-                + "REMIND_ID INTEGER);");
+                + "DAY_ID INTEGER);");
+
+        /* Information about month repeating  */
+        db.execSQL("CREATE TABLE MonthRepeating ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "TASK_ID INTEGER, "
+                + "DAY_OF_MONTH INTEGER);");
 
          /* Table with reminding information. Contains time for remind and it's one*/
         db.execSQL("CREATE TABLE Reminding ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "TIME TEXT, "
-                + "TONE INTEGER);");
-
+                + "TASK_ID INTEGER, "
+                + "TIME TEXT);");
 
          /* Table with goals info*/
         db.execSQL("CREATE TABLE Goals("
@@ -83,6 +87,7 @@ public class SPDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE Days("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "DAY TEXT);");
+
 
         /* If user delete repeated task from some day, it check in here */
         db.execSQL("CREATE TABLE DeletedTasks("

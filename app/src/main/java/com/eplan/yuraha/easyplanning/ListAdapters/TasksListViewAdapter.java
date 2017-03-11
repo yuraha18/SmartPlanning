@@ -217,7 +217,7 @@ public void setNewData(ArrayList<Task> list)
         long taskId = tasksList.get(position).getId();
 
         // 3rd parameter is current day (when user are deleting task), not dayFromSpinner
-        boolean result = DBHelper.deleteTaskFromAllDays(readableDb, taskId, parentFragment.getTodaysDay());
+        boolean result = DBHelper.deleteTaskFromAllDays(readableDb, taskId+"", parentFragment.getTodaysDay());
 
         if (!result)
             Toast.makeText(context, context.getResources().getString(R.string.cantDeleteException), Toast.LENGTH_LONG).show();

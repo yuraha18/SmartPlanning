@@ -23,14 +23,32 @@
         <item>Відкрити календар</item>
     </string-array>
 
-    <!-- Day name for DayToogleButtons  -->
-    <string name="monday">П</string>
-    <string name="tuesday">В</string>
-    <string name="wednesday">С</string>
-    <string name="thursday">Ч</string>
-    <string name="friday">П</string>
-    <string name="saturday">С</string>
-    <string name="sunday">Н</string>
+    <!-- Days  -->
+    <string name="monday">Понеділок</string>
+    <string name="tuesday">Вівторок</string>
+    <string name="wednesday">Середа</string>
+    <string name="thursday">Четвер</string>
+    <string name="friday">Пятниця</string>
+    <string name="saturday">Субота</string>
+    <string name="sunday">Неділя</string>
+
+    <!-- Short days for repeatText in AddTaskFragment -->
+    <string name="mondayShort">Пн</string>
+    <string name="tuesdayShort">Вт</string>
+    <string name="wednesdayShort">Ср</string>
+    <string name="thursdayShort">Чт</string>
+    <string name="fridayShort">Птн</string>
+    <string name="saturdayShort">Сб</string>
+    <string name="sundayShort">Нд</string>
+
+    <!-- Repeat days -->
+    <string name="everyMonday">щопонеділка</string>
+    <string name="everyTuesday">щовівторка</string>
+    <string name="everyWednesday">щосереди</string>
+    <string name="everyThursday">щочетверга</string>
+    <string name="everyFriday">щопятниці</string>
+    <string name="everySaturday">щосуботи</string>
+    <string name="everySunday">щонеділі</string>
 
     <!-- TaskText validation errors-->
     <string name="shortLengthError">Мінімум 5 символів</string>
@@ -44,7 +62,7 @@
 
     <!-- Exception values -->
     <string name="cantParseDataFromViewsException">Помилка зчитування даних</string>
-    <string name="taskAlreadyExistsInDB">Таке завдання вже є в цей день</string>
+    <string name="taskAlreadyExistsInDB">Таке завдання вже є </string>
     <string name="taskNotAddedInDB">Помилка додавання даних в БД</string>
     <string name="dontSetDeadline">Ви не встановили дату дедлайну</string>
     <string name="sameGoalExists">Така ціль вже є</string>
@@ -54,7 +72,7 @@
     <string name="setDatesFirstly">Спочатку встановіть дати</string>
 
     <string name="taskAddSuccessfully">Завдання успішно додано</string>
-    <string name="taskEditSuccessfully">Завдання оновлено додано</string>
+    <string name="taskEditSuccessfully">Завдання успішно оновлено</string>
     <string name="goalAddSuccessfully">Ціль успішно додано</string>
     <string name="goalEditSuccessfully">Ціль успішно оновлено</string>
 
@@ -177,6 +195,7 @@
         <item>4</item>
     </string-array>
 
+    <string name="repeatText">Встановити повторення</string>
 
     <!-- Values for Statistic Activity-->
     <string name="statisticFromAllDays">Всього</string>
@@ -187,6 +206,22 @@
     <string name="from">З</string>
     <string name="to">По</string>
     <string name="showStatistic">Переглянути статистику</string>
+
+    <!--Values for Repeating Dialog Fragment -->
+    <string name="repeatTitle">Оберіть повторюваність</string>
+    <string name="repeatOnce">Один раз</string>
+    <string name="repeatEveryDay">Кожного дня</string>
+    <string name="repeatChooseDays">Вибрати дні</string>
+    <string name="repeatEveryWeekP1">Повторювати щотижня ( </string>
+    <string name="repeatEveryWeekP2">)</string>
+    <string name="repeatEveryMonthP1">Повторювати щомісяця (в </string>
+    <string name="repeatEveryMonthP2">день місяця)</string>
+    <string name="repeatInWeekDays">У будні</string>
+    <string name="repeatInWeekEnds">На вихідних</string>
+    <string name="daysDialogTitle">Оберіть дні тижня</string>
+    <string name="repeatEveryWeek">Повторювати щотижня</string>
+    <string name="repeatEveryMonth">Повторювати щомісяця </string>
+    <string name="setDayForRepeating">Обрати день</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>
