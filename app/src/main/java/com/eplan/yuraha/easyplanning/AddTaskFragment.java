@@ -119,7 +119,7 @@ public class AddTaskFragment extends Fragment {
 
     private ArrayList<CharSequence> allGoals = new ArrayList<>();
     Spinner prioritySpinner ;
-private View view;//link on main view
+    private View view;//link on main view
 
 
     /* Variables with priority values from strings.xml*/
@@ -132,8 +132,8 @@ private View view;//link on main view
     private OnFragmentInteractionListener mListener;
 
     public AddTaskFragment() {
-       chosenDays = new ArrayList<>();
-checkedDays = new ArrayList<>();
+        chosenDays = new ArrayList<>();
+        checkedDays = new ArrayList<>();
         checkedGoals = new ArrayList<>();
     }
 
@@ -184,16 +184,16 @@ checkedDays = new ArrayList<>();
         setGoals.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-             goalOnClick(v);
+                goalOnClick(v);
             }
         });
 
          /* Initialize button for set time for Remembering about task */
-final Button setRememberTime = (Button) view.findViewById(R.id.setRememberTime);
+        final Button setRememberTime = (Button) view.findViewById(R.id.setRememberTime);
         setRememberTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-setRememberTimeOnClick(v);
+                setRememberTimeOnClick(v);
             }
         });
 
@@ -206,8 +206,6 @@ setRememberTimeOnClick(v);
                 setRepeatTimeOnClick();
             }
         });
-
-
 
         return view;
     }
@@ -286,14 +284,14 @@ setRememberTimeOnClick(v);
     }
 
     private void fillInViewByDataFromDB(String taskId) {
-       try {
+        try {
             taskText.setText(DBHelper.getTaskTextFromId(readableDb, taskId));
             int priority = DBHelper.getPriorityFromTaskId(readableDb, taskId);
             prioritySpinner.setSelection(priority-1);// subtract 1 cause position stars from 0, my priority from 1
 
 
-           checkedGoals = DBHelper.getTaskGoals(readableDb, taskId);
-           setRepeatTextByDbData(taskId);
+            checkedGoals = DBHelper.getTaskGoals(readableDb, taskId);
+            setRepeatTextByDbData(taskId);
 
 
             remindTime = DBHelper.getRemindTimeForTaskId(readableDb, taskId);
@@ -301,10 +299,10 @@ setRememberTimeOnClick(v);
             setTimeFromString(remindTime);
 
 
-       }
-       catch (SQLiteException e)
-       {
-           Toast.makeText(getActivity(), getResources().getString(R.string.cantParseDataFromViewsException), Toast.LENGTH_LONG).show();
+        }
+        catch (SQLiteException e)
+        {
+            Toast.makeText(getActivity(), getResources().getString(R.string.cantParseDataFromViewsException), Toast.LENGTH_LONG).show();
         }
 
 
@@ -422,14 +420,14 @@ setRememberTimeOnClick(v);
     }
 
     public static int getDayOfWeek(String day, String dateFormat) {
-       Calendar calendar = getCalendarFromStringDate(day, dateFormat);
-            return calendar.get(Calendar.DAY_OF_WEEK);
+        Calendar calendar = getCalendarFromStringDate(day, dateFormat);
+        return calendar.get(Calendar.DAY_OF_WEEK);
 
     }
 
     public static int getDayOfMonth(String day, String dateFormat) {
         Calendar calendar = getCalendarFromStringDate(day, dateFormat);
-            return calendar.get(Calendar.DAY_OF_MONTH);
+        return calendar.get(Calendar.DAY_OF_MONTH);
 
     }
 
@@ -454,9 +452,11 @@ setRememberTimeOnClick(v);
             return;
         }
 
+        if (AddTaskFragment.compareTwoDates(dayFrom, todaysDay) >= 0 )
         chosenDays.remove(0);// remove DayFrom
+
         chosenDays = new ArrayList<>(new LinkedHashSet<>(chosenDays));// delete duplicates in list, if exists
-        boolean isTaskEdited =  DBHelper.editTask(writableDb, todaysDay, calledDay, taskId, taskText.getText().toString(), priority, chosenDays, isRepeatEveryMonth, checkedGoals, remindTime);
+        boolean isTaskEdited =  DBHelper.editTask(writableDb, todaysDay, calledDay, taskId, taskText.getText().toString(), priority, chosenDays, isRepeatEveryMonth, checkedGoals, remindTime, getContext());
 
         /* if was some problem with editing show message and come out from method*/
         if (!isTaskEdited)
@@ -483,13 +483,13 @@ setRememberTimeOnClick(v);
 
         /*getTaskDataFromViews() parse all information from views
          * if something was wrong with they, we come out and cancel adding task */
-       if (!getTaskDataFromViews())
-           return;
+        if (!getTaskDataFromViews())
+            return;
 
         chosenDays.add(calledDay);
         /*If there are the same task in one of chosen day we prevent user and come out
         * i'm sending 'this' for sending Toast warning from DBHelper*/
-boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, taskText.getText().toString(), chosenDays, null);
+        boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, taskText.getText().toString(), chosenDays, null);
 
         if (checkTaskInDB)
         {
@@ -502,7 +502,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
 
         /* Adding new task
         * if something was wrong: show message for user and come out*/
-      boolean isTaskAdded =  DBHelper.addTask(writableDb, taskText.getText().toString(), priority, chosenDays, calledDay, isRepeatEveryMonth, checkedGoals, remindTime);
+        boolean isTaskAdded =  DBHelper.addTask(writableDb, taskText.getText().toString(), priority, chosenDays, calledDay, isRepeatEveryMonth, checkedGoals, remindTime, getContext());
 
         if (!isTaskAdded)
         {
@@ -541,12 +541,12 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
         initWeekDays();
         if (weekDays.contains(day))
         {
-         int index = weekDays.indexOf(day);
-         day = daysOfWeek[index];
+            int index = weekDays.indexOf(day);
+            day = daysOfWeek[index];
         }
 
         else
-        day = formatDate(day);
+            day = formatDate(day);
 
         Toast.makeText(getContext(), getContext().getResources().getString(R.string.taskAlreadyExistsInDB)
                 + " " + day, Toast.LENGTH_LONG).show();
@@ -634,7 +634,9 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay,
                                           int minute) {
-                      remindTime =  hourOfDay+":"+minute;
+                        remindTime =  hourOfDay+":"+minute;
+                        mHour = hourOfDay;
+                        mMinute = minute;
                     }
                 }, mHour, mMinute, false);
 
@@ -668,7 +670,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
                     break;
                 case 2:
                     isRepeatEveryMonth = false;
-                  getRepeatingValues(data.getStringExtra("value"));
+                    getRepeatingValues(data.getStringExtra("value"));
                     break;
                 case 3:
                     isRepeatEveryMonth = false;
@@ -679,8 +681,8 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
                     chosenDays.clear();
                     isRepeatEveryMonth = false;
                     dayFromCalendar = data.getStringExtra("dayFromCalendar");
-                   chosenDays.add(dayFromCalendar);
-               repeatText.setText(formatDate(dayFromCalendar));
+                    chosenDays.add(dayFromCalendar);
+                    repeatText.setText(formatDate(dayFromCalendar));
                     break;
                 default:
                     break;
@@ -729,8 +731,8 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
         {
             // one time repeating
             case 0:
-            chosenDays.add(calledDay);
-               textRepeatValue.append(getResources().getString(R.string.repeatOnce));
+                chosenDays.add(calledDay);
+                textRepeatValue.append(getResources().getString(R.string.repeatOnce));
                 break;
 
 
@@ -739,18 +741,18 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
                 setAllDays();
 
                 break;
-                // add days from monday to friday (weekday)
+            // add days from monday to friday (weekday)
             case 2:
                 setWeekDays();
 
                 break;
-                // add weekends. Week starts from Sunday (1-st index)
+            // add weekends. Week starts from Sunday (1-st index)
             case 3:
                 chosenDays.add(weekDays.get(1));
                 chosenDays.add(weekDays.get(7));
                 textRepeatValue.append( weekDaysShort[7] + ",");
                 textRepeatValue.append(weekDaysShort[1]);
- break;
+                break;
                 /* case 4 not exist, because if you choose 4-th position in dialog fragment you will be thrown to another
                 * dialog fragment where you can choose repeating days. And this fragment returns result with another code to another method
                 * case 5 mean that user wanna repeating every week*/
@@ -760,7 +762,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
                 break;
 
             case 6:
-               isRepeatEveryMonth = true;
+                isRepeatEveryMonth = true;
                 textRepeatValue.append(getContext().getResources().getString(R.string.repeatEveryMonth));
                 break;
         }
@@ -771,7 +773,7 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
     }
 
     private void setAllDays() {
-      setWeekDays();
+        setWeekDays();
         chosenDays.add(weekDays.get(7));
         chosenDays.add(weekDays.get(1));
 
@@ -824,46 +826,25 @@ boolean checkTaskInDB = DBHelper.isTaskNameExistInThisDay(readableDb, this, task
         mListener = null;
     }
 
-    public static String getEarliestDay(ArrayList<String> dates) {
-
-dates.removeAll(weekDays);// i must remove all weekDays (Monday, Sunday...) from list because in comparing they will be cause of Exceptions
-
-        if (dates.size() > 0) {
-            Collections.sort(dates, new Comparator<String>() {
-                @Override
-                public int compare(String day1, String day2) {
-                    return compareTwoDates(day1, day2);
-                }
-            });
-            return dates.get(0);
+    public static int compareTwoDates (String day1, String day2)
+    {
+        int result = 0;
+        Date date1;
+        Date date2;
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+            date1 = formatter.parse(day1);
+            date2 = formatter.parse(day2);
+            result =  date1.compareTo(date2);
+        }
+        catch (ParseException e){
         }
 
-        return "-1";
-
-
+        return result;
     }
-
-public static int compareTwoDates (String day1, String day2)
-{
-    int result = 0;
-    Date date1;
-    Date date2;
-    try {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        date1 = formatter.parse(day1);
-        date2 = formatter.parse(day2);
-        result =  date1.compareTo(date2);
-    }
-    catch (ParseException e){
-    }
-
-    return result;
-}
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-    }
-
-
+}

@@ -183,7 +183,7 @@ public class TaskListFragment extends ListFragment {
     }
 
 
-    private String getTomorrowsDay() {
+    public static String getTomorrowsDay() {
         final Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, 1);
 

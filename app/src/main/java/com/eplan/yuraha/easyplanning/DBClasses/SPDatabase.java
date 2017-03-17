@@ -120,6 +120,12 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "COUNT_DONE INTEGER, "
                 + "COUNT_IN_PROGRESS INTEGER);");
 
+         /* Table with Notification ids. This id is taskId (which is unique)*/
+        db.execSQL("CREATE TABLE Notifications("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "TASK_ID INTEGER, "
+                + "DAY_ID INTEGER);");
+
 
         DBHelper.addToDateTable(db, TaskListFragment.getTodaysDay());//save day creating app
         addDayToDB(db, "Sunday");

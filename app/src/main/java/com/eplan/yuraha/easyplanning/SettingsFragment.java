@@ -18,7 +18,9 @@ import android.view.ViewGroup;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 
 /**
@@ -170,27 +172,41 @@ public class SettingsFragment extends PreferenceFragment implements
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
       DBHelper.updatePreferences(readableDb, Constants.DB_PREF_TABLE, Constants.DB_NOTIF_RINGTONE, newValue.toString(), ID);
-        return false;
+        return true;
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-String value = "0", tableRow;
+        String value = "0", tableRow;
 
-        if (key.equals(Constants.PREF_VIBRATION) || key.equals(Constants.PREF_REMIND_ME)||
+        if (key.equals(Constants.PREF_VIBRATION) || key.equals(Constants.PREF_REMIND_ME) ||
                 key.equals(Constants.PREF_TURN_ON_NOTIFICATIONS)) {
-            boolean check =  sharedPreferences.getBoolean(key, true);
+            boolean check = sharedPreferences.getBoolean(key, true);
             if (check)
                 value = "1";
 
-        }
-        else
-        {
+        } else {
             value = sharedPreferences.getString(key, "");
         }
 
         tableRow = prefRows.get(key);
         DBHelper.updatePreferences(readableDb, Constants.DB_PREF_TABLE, tableRow, value, ID);
+
+        /* if user changes pref_turn_on_notifications it calls special method:
+        * if turn_on recreates all notifications from db (and they will be notif in right time)
+        * turn_of cancel all notifications (and they will not showing under user turns on)*/
+        if (key.equals(Constants.PREF_TURN_ON_NOTIFICATIONS)) {
+            boolean check = sharedPreferences.getBoolean(key, true);
+            if (check)
+                setUpAllNotifications();
+
+            else
+                cancelAllNotifications();
+        }
+
+        /* if user change time for reminding or turn on/off this reminding it calls special method */
+        if (key.equals(Constants.PREF_REMIND_ME) || key.equals(Constants.PREF_SET_REMIND_TIME))
+            initEveryDayPlanning(context);
     }
 
 
@@ -227,4 +243,39 @@ String value = "0", tableRow;
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
+
+// get all notifications from db and recreate them  (including every day reminding about planning)
+    public void setUpAllNotifications() {
+        HashSet<Long> notificationIds = DBHelper.getAllNotifications(readableDb);
+        for (long id : notificationIds)
+        {
+            System.out.println(id);
+            ManagerNotifications.createNotifications(readableDb, context, id+"");
+        }
+    }
+
+    // cancel but not delete from db all notifications (including every day reminding about planning)
+    public void cancelAllNotifications() {
+        HashSet<Long> notificationIds = DBHelper.getAllNotifications(readableDb);
+
+        for (long id : notificationIds)
+        {System.out.println(id);
+            ManagerNotifications.cancelNotifications(readableDb, id+"", context);
+        }
+    }
+
+    /* if it was some change with reminding about every day planning preferences update its notif */
+    private void initEveryDayPlanning(Context context) {
+        SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean isSetEveryDayNotification = preference.getBoolean(Constants.PREF_REMIND_ME, false);
+
+        ManagerNotifications.cancelEveryDayRepeatingAlarm(context);// cancel notif in all cases
+
+        // update only if turn on this reminding
+        if (isSetEveryDayNotification)
+            ManagerNotifications.createNotifications(readableDb, context, "0");
+
+
+    }
+
 }

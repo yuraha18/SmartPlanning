@@ -3,6 +3,8 @@
     package="com.eplan.yuraha.easyplanning">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -10,6 +12,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <receiver android:name=".NotificationsReboot" android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -23,15 +32,18 @@
         <activity
             android:name=".GoalsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".AddGoalActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity android:name=".StatisticActivity"
-            android:theme="@style/AppTheme.NoActionBar" ></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <receiver android:name=".NotificationPublisher" />
+
+
+
     </application>
 
 </manifest>

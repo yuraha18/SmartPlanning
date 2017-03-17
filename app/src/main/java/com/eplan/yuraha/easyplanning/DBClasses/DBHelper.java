@@ -1,6 +1,7 @@
 package com.eplan.yuraha.easyplanning.DBClasses;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -11,10 +12,12 @@ import com.eplan.yuraha.easyplanning.Constants;
 import com.eplan.yuraha.easyplanning.DayStatistic;
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
 import com.eplan.yuraha.easyplanning.ListAdapters.Task;
+import com.eplan.yuraha.easyplanning.ManagerNotifications;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -26,49 +29,127 @@ public class DBHelper {
 
     public static boolean addTask(SQLiteDatabase db, String text, int priority,
                                   ArrayList<String> chosenDays, String calledDay, boolean isRepeatEveryMonth, List<String> checkedGoals,
-                                  String remindTime){
-try {
-    long taskID = addToTasksTable(db, text, priority);
-     addToRemindingTable(db, taskID, remindTime);
+                                  String remindTime, Context context){
+        try {
+            long taskID = addToTasksTable(db, text, priority);
+            addToRemindingTable(db, taskID, remindTime);
 
-    // if user chosen repeat every week, add info about repeating day in MonthRepeating table
-    if (isRepeatEveryMonth) {
-        addToMonthRepeatingTable(db, taskID+"", calledDay);
-    }
+            // if user chosen repeat every week, add info about repeating day in MonthRepeating table
+            if (isRepeatEveryMonth) {
+                addToMonthRepeatingTable(db, taskID+"", calledDay);
+            }
 // in other case, set repeating days
-    else {
-        for (String day : chosenDays) {
-            long dayID = addToDateTable(db, day);
-            addToRepeatingTable(db, taskID, dayID);
+            else {
+                for (String day : chosenDays) {
+                    long dayID = addToDateTable(db, day);
+                    addToRepeatingTable(db, taskID, dayID);
+                }
+            }
+
+            addToInProgressTasks(db, taskID);
+
+            if (checkedGoals.size() > 0)
+                addToTaskToGoalTable(db, taskID, checkedGoals);
+
+            //create new row in TaskLifecycleTable where first day from list will be FROM_DAY
+            addToTaskLifecycleTable(db, taskID, calledDay);
+
+            if (remindTime != null){}
+            ManagerNotifications.createNotifications(db, context, taskID+"");
+
+
         }
-    }
-
-    addToInProgressTasks(db, taskID);
-
-    if (checkedGoals.size() > 0)
-    addToTaskToGoalTable(db, taskID, checkedGoals);
-
-    //create new row in TaskLifecycleTable where first day from list will be FROM_DAY
-        addToTaskLifecycleTable(db, taskID, calledDay);
-
-
-}
-catch (SQLiteException e)
-{return false;}
+        catch (SQLiteException e)
+        {return false;}
         catch (Exception e)
         {return false;}
 
 
-        
+
         return true;
     }
 
+    public static long addNotification(SQLiteDatabase db, String taskID, String day) throws SQLiteException {
+        long dayId = getDayFromString(db, day);
+        ContentValues value = new ContentValues();
+        value.put("TASK_ID", taskID);
+        value.put("DAY_ID", dayId);
+       long id = db.insert("Notifications", null, value);
+        return id;
+    }
+
+    public static int getLastInsertedNotificationId(SQLiteDatabase db)
+    {
+        try {
+            Cursor cursor = db.rawQuery("SELECT * FROM Notifications ORDER BY _id DESC LIMIT 1" , null);
+            if (cursor .moveToFirst())
+                return cursor.getInt(0);
+        }
+        catch (Exception e){return 0;}
+
+        return 0;
+
+    }
+
+
+
+    public static void deleteNotifications(SQLiteDatabase db, String taskID) throws SQLiteException{
+        db.delete("Notifications", "TASK_ID" + " = ?", new String[] { taskID });
+    }
+
+    public static long getNotificationId(SQLiteDatabase db, String taskId, String dayId)
+    {
+        Cursor cursor = db.query ("Notifications",
+                new String[] {"_id"},
+                "TASK_ID = ? AND DAY_ID = ?",
+                new String[] {taskId, dayId},
+                null, null,null);
+
+        if (cursor .moveToFirst())
+            return cursor.getLong(0);
+
+        return -1;
+    }
+
+    public static HashSet<Long> getAllNotifications(SQLiteDatabase db) throws SQLiteException {
+
+        // use Set here because in this collection are unique values always. There are many taskId duplicates
+        HashSet<Long> notifIdSet = new HashSet<>();
+        Cursor cursor = db.rawQuery("SELECT TASK_ID FROM Notifications" , null);
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+              long id = cursor.getLong(0);
+                notifIdSet.add(id);
+                cursor.moveToNext();
+            }
+        }
+        return notifIdSet;
+    }
+
+    public static ArrayList<Integer> getNotificationsForTask (SQLiteDatabase db, String taskID)
+    {
+        ArrayList<Integer> notifIdList = new ArrayList<>();
+        Cursor cursor = db.query ("Notifications",
+                new String[] {"_id"},
+                "TASK_ID = ?",
+                new String[] {taskID},
+                null, null,null);
+
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                notifIdList.add(cursor.getInt(0));
+                cursor.moveToNext();
+            }
+        }
+
+        return notifIdList;
+    }
     private static void addToMonthRepeatingTable(SQLiteDatabase db, String taskID, String calledDay) {
-      int dayOfMonth =  AddTaskFragment.getDayOfMonth(calledDay, Constants.DATEFORMAT);
+        int dayOfMonth =  AddTaskFragment.getDayOfMonth(calledDay, Constants.DATEFORMAT);
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
         value.put("DAY_OF_MONTH", dayOfMonth);
-         db.insert("MonthRepeating", null, value);
+        db.insert("MonthRepeating", null, value);
     }
 
     /* here im adding the earliest day from chosen days to db like DAY_FROM in tasklifecycle
@@ -83,10 +164,10 @@ catch (SQLiteException e)
         long dayID = addToDateTable(db, day);
 
         ContentValues value = new ContentValues();
-            value.put("TASK_ID", taskID);
-            value.put("DAY_FROM_ID", dayID);
-            value.put("DAY_TO_ID", -1);
-            long id = db.insert("TaskLifecycle", null, value);
+        value.put("TASK_ID", taskID);
+        value.put("DAY_FROM_ID", dayID);
+        value.put("DAY_TO_ID", -1);
+        long id = db.insert("TaskLifecycle", null, value);
 
 
     }
@@ -95,7 +176,7 @@ catch (SQLiteException e)
 
     public static boolean editTask(SQLiteDatabase db, String todaysDay, String calledDay, String taskID, String text, int priority,
                                    ArrayList<String> chosenDays, boolean isRepeatEveryMonth, List<String> checkedGoals,
-                                   String remindTime) {
+                                   String remindTime, Context context) {
         try {
             /* here are some trick, hard for understanding
             * in bellow if I compare two dates: dayFrom task and todays day
@@ -105,19 +186,20 @@ catch (SQLiteException e)
             * if task never shows (dayFrom > todays), i only update him (because there are info for history)
             * im updating only for economy space in db*/
 
-           String dayFrom = getDayFromByTaskId(db, taskID);
+            String dayFrom = getDayFromByTaskId(db, taskID);
             if (AddTaskFragment.compareTwoDates(dayFrom, todaysDay) >= 0 )
             {
                 chosenDays.add(dayFrom);
-                updateTask(db, calledDay,taskID,text, priority, chosenDays, isRepeatEveryMonth, checkedGoals,remindTime);
+                updateTask(db, calledDay,taskID,text, priority, chosenDays, isRepeatEveryMonth, checkedGoals,remindTime, context);
             }
 
 
             else
             {
-                deleteTaskFromAllDays(db, taskID, todaysDay);// set DayTo in taskLifecycle
-                addTask(db, text, priority, chosenDays, todaysDay, isRepeatEveryMonth, checkedGoals, remindTime);
+                deleteTaskFromAllDays(db, taskID, todaysDay, context);// set DayTo in taskLifecycle
+                addTask(db, text, priority, chosenDays, todaysDay, isRepeatEveryMonth, checkedGoals, remindTime, context);
             }
+
         }
         catch (SQLiteException e)
         {return false;}
@@ -130,22 +212,36 @@ catch (SQLiteException e)
 
     }
 
-    private static void updateTask(SQLiteDatabase db, String calledDay, String taskID, String text, int priority, ArrayList<String> chosenDays, boolean isRepeatEveryMonth, List<String> checkedGoals, String remindTime) {
-
+    private static void updateTask(SQLiteDatabase db, String calledDay, String taskID, String text, int priority, ArrayList<String> chosenDays, boolean isRepeatEveryMonth, List<String> checkedGoals, String remindTime, Context context) {
         updateTaskTable(db, taskID, text, priority);
         updateRemindTable(db, taskID, remindTime);
+        updateRepeatingDays(db, isRepeatEveryMonth, taskID, calledDay, chosenDays);
+        updateNotifications(db, context, taskID);
+        updateTaskToGoalTable(db, taskID, checkedGoals);
+    }
 
-
+    private static void updateNotifications(SQLiteDatabase db, Context context, String taskID) {
         db.beginTransaction();
         try {
-            System.out.println(chosenDays);
+        ManagerNotifications.cancelNotifications(db, taskID, context);
+            deleteNotifications(db, taskID);
+            System.out.println("updateNotifications");
+        ManagerNotifications.createNotifications(db, context, taskID);
+            db.setTransactionSuccessful();
+        }
+        catch (SQLiteException e) {}
+        finally {db.endTransaction();}
+    }
+
+    private static void updateRepeatingDays(SQLiteDatabase db, boolean isRepeatEveryMonth, String taskID, String calledDay, ArrayList<String> chosenDays) {
+        db.beginTransaction();
+        try {
             if (isRepeatEveryMonth) {
                 deleteFromRepeatingTable(db, taskID);
                 updateRepeatEveryMonthTable(db, taskID, calledDay);
             } else {
                 deleteFromRepeatMonthTable(db, taskID);
                 updateRepeatingTable(db, taskID, chosenDays);
-
             }
 
             db.setTransactionSuccessful();
@@ -155,17 +251,15 @@ catch (SQLiteException e)
         finally {
             db.endTransaction();
         }
-
-        updateTaskToGoalTable(db, taskID, checkedGoals);
     }
 
     private static void updateRepeatingTable(SQLiteDatabase db, String taskID, ArrayList<String> chosenDays) {
-            db.delete("Repeating", "TASK_ID" + " = ?", new String[] { taskID });
+        db.delete("Repeating", "TASK_ID" + " = ?", new String[] { taskID });
 
-            for (String day : chosenDays) {
-                long dayID = addToDateTable(db, day);
-                addToRepeatingTable(db, Long.parseLong(taskID), dayID );
-            }
+        for (String day : chosenDays) {
+            long dayID = addToDateTable(db, day);
+            addToRepeatingTable(db, Long.parseLong(taskID), dayID );
+        }
 
     }
 
@@ -190,7 +284,7 @@ catch (SQLiteException e)
         if (cursor .moveToFirst()) {
             while (cursor.isAfterLast() == false) {
                 String taskText = cursor.getString(0);
-tasks.add(taskText);
+                tasks.add(taskText);
                 cursor.moveToNext();
             }
         }
@@ -228,10 +322,10 @@ tasks.add(taskText);
 
         long dayId = addToDateTable(db, day);
         ContentValues value = new ContentValues();
-            value.put("TASK_ID", taskId);
-            value.put("DAY_ID", dayId);
-             db.insert("DoneTasks", null, value);
-            value.clear();
+        value.put("TASK_ID", taskId);
+        value.put("DAY_ID", dayId);
+        db.insert("DoneTasks", null, value);
+        value.clear();
 
     }
 
@@ -251,8 +345,8 @@ tasks.add(taskText);
         db.beginTransaction();
 
         try {
-           int count = db.delete("TaskToGoal", "TASK_ID" + " = ?", new String[] { taskID });
-           addToTaskToGoalTable(db, Long.parseLong(taskID), checkedGoals );
+            int count = db.delete("TaskToGoal", "TASK_ID" + " = ?", new String[] { taskID });
+            addToTaskToGoalTable(db, Long.parseLong(taskID), checkedGoals );
             db.setTransactionSuccessful();
         }
         catch (Exception e){}
@@ -263,10 +357,10 @@ tasks.add(taskText);
     }
 
     private static void updateRemindTable(SQLiteDatabase db, String taskID, String remindTime) {
-            ContentValues value = new ContentValues();
-            value.put("TIME", remindTime);
-            int updCount = db.update("Reminding", value, "TASK_ID = ?",
-                    new String[] { taskID });
+        ContentValues value = new ContentValues();
+        value.put("TIME", remindTime);
+        int updCount = db.update("Reminding", value, "TASK_ID = ?",
+                new String[] { taskID });
 
 
         if (updCount<1)
@@ -274,15 +368,15 @@ tasks.add(taskText);
     }
 
     private static void addToTaskToGoalTable(SQLiteDatabase db, long taskID, List<String> checkedGoals) {
-            ContentValues value = new ContentValues();
-            for (String goal : checkedGoals)
-            {
-                long goalID = getGoalIdFromGoalText(db, goal);
-                value.put("TASK_ID", taskID);
-                value.put("GOAL_ID", goalID);
-                long id = db.insert("TaskToGoal", null, value);
-                value.clear();
-            }
+        ContentValues value = new ContentValues();
+        for (String goal : checkedGoals)
+        {
+            long goalID = getGoalIdFromGoalText(db, goal);
+            value.put("TASK_ID", taskID);
+            value.put("GOAL_ID", goalID);
+            long id = db.insert("TaskToGoal", null, value);
+            value.clear();
+        }
 
 
     }
@@ -343,7 +437,7 @@ tasks.add(taskText);
         ContentValues value = new ContentValues();
         value.put("TASK_TEXT", text);
         value.put("PRIORITY", priority);
-       long taskID = db.insert("Tasks", null, value);
+        long taskID = db.insert("Tasks", null, value);
 
         if (taskID < 0)
             throw new SQLiteException("id=-1 in addToTasksTable");
@@ -386,7 +480,7 @@ tasks.add(taskText);
     * if there are no one task with the same text we return -1*/
     public static ArrayList<Long> getTaskIDByString(SQLiteDatabase db, String taskName) throws SQLiteException
     {
-    ArrayList<Long> idList = new ArrayList<>();
+        ArrayList<Long> idList = new ArrayList<>();
         Cursor cursor = db.query ("Tasks",
                 new String[] {"_id"},
                 "TASK_TEXT = ?",
@@ -417,7 +511,7 @@ tasks.add(taskText);
 
             for (Long taskID : taskIdList) {
                 for (String day : days) {
-
+                    System.out.println(day + " : " + taskID + "-"+sendedId);
 
                     if (taskID == sendedId) {
                         break;
@@ -445,7 +539,7 @@ tasks.add(taskText);
           * it gets all task names from method similar to gettingAllTasksForDay and check if there are
            * the same taskName*/
         if (!AddTaskFragment.weekDays.contains(day)) {
-          ArrayList<String> taskNamesList = getTaskNamesFromRepeatingTable(db, day);
+            ArrayList<String> taskNamesList = getTaskNamesFromRepeatingTable(db, day);
 
             if (taskNamesList.contains(taskName))
                 return true;
@@ -453,19 +547,19 @@ tasks.add(taskText);
             return false;
         }
 
-            long dayId = getDayFromString(db, day);
-            int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
+        long dayId = getDayFromString(db, day);
+        int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
-            ArrayList<Long> taskIds = new ArrayList<>();
-            taskIds.addAll(getListFromRepeatingTable(db, dayId));
-            taskIds.addAll(getListFromMonthRepeatingTable(db, dayOfMonth));
+        ArrayList<Long> taskIds = new ArrayList<>();
+        taskIds.addAll(getListFromRepeatingTable(db, dayId));
+        taskIds.addAll(getListFromMonthRepeatingTable(db, dayOfMonth));
 
-            taskIds = checkOutAllTasksOnDeleting(db, taskIds, dayId);
+        taskIds = checkOutAllTasksOnDeleting(db, taskIds, dayId);
 
-            if (taskIds.contains(taskID))
-                return true;
+        if (taskIds.contains(taskID))
+            return true;
 
-            return false;
+        return false;
 
     }
 
@@ -516,11 +610,11 @@ tasks.add(taskText);
         if (cursor.moveToFirst())
         {
             String id = cursor.getString(0);
-           if (!id.equalsIgnoreCase(goalId))
-               return true;
+            if (!id.equalsIgnoreCase(goalId))
+                return true;
 
             else
-               return false;
+                return false;
 
         }
 
@@ -538,7 +632,7 @@ tasks.add(taskText);
             value.put("NOTICE", note);
             value.put("DEADLINE", dayId);
             goalId = db.insert("Goals", null, value);
-            
+
             if (goalId < 0)
                 throw new SQLiteException("id=-1 in addGoalToDB");
 
@@ -583,7 +677,7 @@ tasks.add(taskText);
 
     public static ArrayList<String> getDaysForTaskId(SQLiteDatabase db, String taskId)
     {
-      ArrayList<String> daysList = new ArrayList<>();
+        ArrayList<String> daysList = new ArrayList<>();
 
         Cursor cursor = db.query ("Repeating",
                 new String[] {"DAY_ID"},
@@ -607,25 +701,25 @@ tasks.add(taskText);
 
 
     public static void moveGoalToDone(SQLiteDatabase db,  String goalId, String todaysDate) throws SQLiteException
-  {
-      long id =0;
-      long todaysDayId = addToDateTable(db, todaysDate);
-      ContentValues value = new ContentValues();
-      value.put("GOAL_ID", goalId);
-      value.put("DAY_ID", todaysDayId);
-      db.beginTransaction();
+    {
+        long id =0;
+        long todaysDayId = addToDateTable(db, todaysDate);
+        ContentValues value = new ContentValues();
+        value.put("GOAL_ID", goalId);
+        value.put("DAY_ID", todaysDayId);
+        db.beginTransaction();
 
-      try {
-           id = db.insert("DoneGoals", null, value);
-          db.delete("InProgressGoals", "GOAL_ID" + " = ?", new String[] { goalId });
-          db.setTransactionSuccessful();
-      }
-      catch (Exception e){}
-      finally {
-          db.endTransaction();
-      }
+        try {
+            id = db.insert("DoneGoals", null, value);
+            db.delete("InProgressGoals", "GOAL_ID" + " = ?", new String[] { goalId });
+            db.setTransactionSuccessful();
+        }
+        catch (Exception e){}
+        finally {
+            db.endTransaction();
+        }
 
-  }
+    }
 
     public static ArrayList<Goal> getDoneGoalsList(SQLiteDatabase db)
     {
@@ -700,7 +794,7 @@ tasks.add(taskText);
             }
 
             // if there are any tasks attached, delete it
-            else 
+            else
                 db.delete("Goals","_id=? ",new String[]{goalId});
 
             return true;
@@ -726,29 +820,29 @@ tasks.add(taskText);
 
     }
 
-public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, String taskId)
-{
-    ArrayList<String> daysList = new ArrayList<>();
+    public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, String taskId)
+    {
+        ArrayList<String> daysList = new ArrayList<>();
 
-    Cursor cursor = db.query ("Repeating",
-            new String[] {"DAY_ID"},
-            "TASK_ID = ?",
-            new String[] {taskId},
-            null, null,null);
+        Cursor cursor = db.query ("Repeating",
+                new String[] {"DAY_ID"},
+                "TASK_ID = ?",
+                new String[] {taskId},
+                null, null,null);
 
-    if (cursor .moveToFirst()) {
-        while (cursor.isAfterLast() == false) {
-            try {
-               String dayId = cursor.getString(0);
-               String day = getDayFromId(db, dayId);
-                daysList.add(day);
+        if (cursor .moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                try {
+                    String dayId = cursor.getString(0);
+                    String day = getDayFromId(db, dayId);
+                    daysList.add(day);
+                }
+                catch (Exception e){}
+                cursor.moveToNext();
             }
-            catch (Exception e){}
-            cursor.moveToNext();
         }
+        return daysList;
     }
-    return daysList;
-}
     private static boolean isGoalAttachedToTasks(SQLiteDatabase db, String goalId) {
         Cursor cursor = db.query ("TaskToGoal",
                 new String[] {"_id"},
@@ -757,7 +851,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
                 null, null,null);
 
         if (cursor.moveToFirst())
-        return true;
+            return true;
 
         return false;
     }
@@ -772,7 +866,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
                     new String[] { goalId });
 
             if (updCount < 0)
-               return false;
+                return false;
         }
         catch (SQLiteException e)
         {return false;}
@@ -784,26 +878,26 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
         return true;
     }
 
-   public static String getDayFromDoneGoalByGoalId(SQLiteDatabase db, String goalId)
-   {
-       Cursor cursor = db.query ("DoneGoals",
-           new String[] {"DAY_ID"},
-           "GOAL_ID = ?",
-           new String[] {goalId},
-           null, null,null);
+    public static String getDayFromDoneGoalByGoalId(SQLiteDatabase db, String goalId)
+    {
+        Cursor cursor = db.query ("DoneGoals",
+                new String[] {"DAY_ID"},
+                "GOAL_ID = ?",
+                new String[] {goalId},
+                null, null,null);
 
-       long dateId;
-       if (cursor.moveToFirst())
-       {
-           dateId = cursor.getLong(0);
+        long dateId;
+        if (cursor.moveToFirst())
+        {
+            dateId = cursor.getLong(0);
 
 
-          return getDayFromId(db, dateId+"");
-       }
-       else
-           throw new SQLiteException();
+            return getDayFromId(db, dateId+"");
+        }
+        else
+            throw new SQLiteException();
 
-   }
+    }
 
 
 
@@ -828,14 +922,14 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
 
     public static ArrayList<Task> getAllTasksFromDay(SQLiteDatabase db, String day, String dayOfWeek)
     {
-      ArrayList<Task> inProgressTasks = new ArrayList<>();
+        ArrayList<Task> inProgressTasks = new ArrayList<>();
         ArrayList<Task> doneTasks = new ArrayList<>();
 
         long dayID = addToDateTable(db, day);
         long dayOfWeekId = addToDateTable(db, dayOfWeek);
         int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
-       ArrayList<Long> tasksIdList =  getTasksListFromRepeatingTable(db, dayID, dayOfWeekId, dayOfMonth);
+        ArrayList<Long> tasksIdList =  getTasksListFromRepeatingTable(db, dayID, dayOfWeekId, dayOfMonth);
 
         for (Long taskId : tasksIdList)
         {
@@ -889,7 +983,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
         if (cursor .moveToFirst())
             return cursor.getString(0);
 
-         throw new SQLiteException();
+        throw new SQLiteException();
 
 
     }
@@ -897,7 +991,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
     public static DayStatistic getStatisticForDay(SQLiteDatabase db, String day)
     {
         try {
-            long dayId = getDayFromString(db, day);
+            long dayId = addToDateTable(db, day);
 
             // -1 means that day is absent in dayTable, thats why there are no one tasks for this day. That's why it returns empty object
             if (dayId==-1)
@@ -914,6 +1008,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
             {
                 int countDone = cursor.getInt(0);
                 int counInProgress = cursor.getInt(1);
+
                 return new DayStatistic(countDone, counInProgress);
             }
             else
@@ -922,7 +1017,8 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
                 return dayStatistic;
             }
         }
-        catch (Exception e){return new DayStatistic(0,0);}
+        catch (Exception e){
+           return new DayStatistic(0,0);}
 
 
 
@@ -966,13 +1062,13 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
         value.put("DAY_ID", dayId);
         value.put("COUNT_DONE", countDone);
         value.put("COUNT_IN_PROGRESS", countInProgress);
-       // db.insert("Statistic", null, value);
+         db.insert("Statistic", null, value);
 
         return new DayStatistic(countDone, countInProgress);
     }
 
     public static ArrayList<Long> getTasksListFromRepeatingTable(SQLiteDatabase db, long dayID, long dayOfWeekId, int dayOfMonth) {
-       ArrayList<Long> list1 = getListFromRepeatingTable(db, dayID);// get tasks for single day
+        ArrayList<Long> list1 = getListFromRepeatingTable(db, dayID);// get tasks for single day
         ArrayList<Long> list2 = getListFromRepeatingTable(db, dayOfWeekId);// get repeating tasks for day
         ArrayList<Long> list3 = getListFromMonthRepeatingTable(db, dayOfMonth);// get tasks for this day of month
 
@@ -1146,7 +1242,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
         throw new SQLiteException();
     }
 
-    public static String getTaskTextFromId(SQLiteDatabase db, String taskId) {
+    public static String getTaskTextFromId(SQLiteDatabase db, String taskId) throws SQLiteException {
         Cursor cursor = db.query ("Tasks",
                 new String[] {"TASK_TEXT"},
                 "_id = ?",
@@ -1162,7 +1258,7 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
 
 
     private static boolean isBetweenDayFromDayTo(SQLiteDatabase db, long taskId, long dayID) {
-       try {
+        try {
             String dayFrom = getDayFromByTaskId(db, taskId+"");
 
             String dayTo = getDayToByTaskId(db, taskId+"");
@@ -1234,13 +1330,17 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
     }
 
     public static boolean isInDeletedTable(SQLiteDatabase db, long taskId, long dayID) {
-        Cursor cursor = db.query("DeletedTasks",
-                new String[]{"_id"},
-                "TASK_ID = ? AND DAY_ID = ?",
-                new String[]{taskId+"", dayID+""},
-                null, null, null);
-        if (cursor.moveToFirst())
-            return true;
+      try {
+          Cursor cursor = db.query("DeletedTasks",
+                  new String[]{"_id"},
+                  "TASK_ID = ? AND DAY_ID = ?",
+                  new String[]{taskId+"", dayID+""},
+                  null, null, null);
+          if (cursor.moveToFirst())
+              return true;
+      }
+      catch (SQLiteException e){return false;}
+
 
         return false;
     }
@@ -1261,11 +1361,11 @@ public static ArrayList<String> getDaysFromRepeatingTable(SQLiteDatabase db, Str
         }
         catch (Exception e){return false;}
 
-return true;
+        return true;
     }
 
 
-    public static boolean deleteTaskFromAllDays(SQLiteDatabase db, String taskId, String day) {
+    public static boolean deleteTaskFromAllDays(SQLiteDatabase db, String taskId, String day, Context context) {
 
         try {
             long dayToId = addToDateTable(db, day);
@@ -1277,11 +1377,14 @@ return true;
 
             if (updCount<1)
                 throw new SQLiteException("cant delete from whole days");
+
+            ManagerNotifications.cancelNotifications(db, taskId, context);
+            deleteNotifications(db, taskId);
         }
 
         catch (SQLiteException e){return false;}
 
-       return true;
+        return true;
     }
 
     /* Here you can update rows in Preference and Notification tables*/
@@ -1296,6 +1399,3 @@ return true;
 
 
 }
-
-
-

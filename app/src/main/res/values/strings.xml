@@ -223,6 +223,10 @@
     <string name="repeatEveryMonth">Повторювати щомісяця </string>
     <string name="setDayForRepeating">Обрати день</string>
 
+    <string name="notificationTitle">Нагадування</string>
+
+    <string name="timeForPlanning">Настав час планування</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="tones_dialog_frag_title">Оберіть мелодію</string>
     <string name="goals_dialog_frag_tones">Виберіть цілі</string>

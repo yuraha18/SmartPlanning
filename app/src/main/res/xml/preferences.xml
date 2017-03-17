@@ -13,10 +13,12 @@
         android:defaultValue="true" />
 
         <RingtonePreference
-            android:dependency="pref_turn_on_notifications"
-            android:defaultValue=""
-            android:title="@string/pref_tone"
-            android:key="pref_tone" />
+        android:dependency="pref_turn_on_notifications"
+        android:defaultValue=""
+        android:title="@string/pref_tone"
+        android:key="pref_tone" />
+
+
 
         <SwitchPreference
             android:dependency="pref_turn_on_notifications"
@@ -24,18 +26,17 @@
             android:title="@string/pref_vibration"
             android:key="pref_vibration" />
 
+        <com.eplan.yuraha.easyplanning.TimePreference
+            android:dependency="pref_remind_about_planning"
+            android:key="pref_set_time"
+            android:textSize="20px"
+            android:title="@string/pref_set_time" />
         <CheckBoxPreference
             android:dependency="pref_turn_on_notifications"
             android:defaultValue="true"
             android:title="@string/pref_remind_about_planning"
             android:key="pref_remind_about_planning"
             android:textSize="8sp" />
-
-        <com.eplan.yuraha.easyplanning.TimePreference
-            android:dependency="pref_remind_about_planning"
-            android:key="pref_set_time"
-            android:textSize="20px"
-            android:title="@string/pref_set_time" />
     </PreferenceCategory>
 
     <PreferenceCategory

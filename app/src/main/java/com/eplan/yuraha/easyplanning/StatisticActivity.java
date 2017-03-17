@@ -189,11 +189,12 @@ private String fromDate;
         int countDoneTasks = 0, countInProgressTasks=0;
         while (true)
         {
-            System.out.println(fromDay);
+
             DayStatistic day = DBHelper.getStatisticForDay(readableDb, fromDay);
 
            countDoneTasks += day.getCountDone();
             countInProgressTasks += day.getCountInProgress();
+          //  System.out.println(fromDay + ":" + day.getCountDone() + ":" + day.getCountInProgress());
             fromDay = getPreviousDay(fromDay);
 
             // loop ends if this is the last day (when app was created) or can't parse previous day
