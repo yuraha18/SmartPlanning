@@ -87,7 +87,6 @@ public class ManagerNotifications {
 
     private static void createMonthlyRepeatableAlarm(SQLiteDatabase readableDb, String dayFrom, Context context, String remindTime, int repeatMonthDay, String taskId) {
      Date date = AddTaskFragment.getDateFromString(dayFrom, Constants.DATEFORMAT);
-        System.out.println("createMonthlyRepeatableAlarm");
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 

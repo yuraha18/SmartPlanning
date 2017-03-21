@@ -1,21 +1,32 @@
 package com.eplan.yuraha.easyplanning;
 
 import android.content.Intent;
-import android.net.Uri;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FilterQueryProvider;
+import android.widget.ListAdapter;
+
+import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
+import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by Yura on 09.02.2017.
@@ -24,9 +35,12 @@ import android.view.View;
 public class BaseActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
+    protected ArrayList<String> taskTexts;
 
     protected DrawerLayout drawer;
+    private SearchCursorAdapter adapter;
     protected Toolbar toolbar;
+    protected ActionBarDrawerToggle toggle;
     protected AppBarLayout appBarLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +48,48 @@ public class BaseActivity extends AppCompatActivity
 
         setContentView(R.layout.nav_drawer);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+
         setSupportActionBar(toolbar);
+
 appBarLayout =  (AppBarLayout) findViewById(R.id.appBar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+         toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setVisibility(View.INVISIBLE);
+
         navigationView.setNavigationItemSelectedListener(this);
+
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true); // show back button
+                    toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onBackPressed();
+                        }
+                    });
+                } else {
+                    //show hamburger
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                    toggle.syncState();
+                    toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            drawer.openDrawer(GravityCompat.START);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -52,18 +97,17 @@ appBarLayout =  (AppBarLayout) findViewById(R.id.appBar);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        }
+        else {
             super.onBackPressed();
         }
-
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-
+        initSearch(menu);
         return true;
     }
 
@@ -74,12 +118,68 @@ appBarLayout =  (AppBarLayout) findViewById(R.id.appBar);
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    /* search initialize by data only if user click on search view*/
+    private void initSearch(Menu menu) {
+       final MenuItem myActionMenuItem = menu.findItem( R.id.action_search);
+        myActionMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                createSearchQueries(myActionMenuItem);
+                return true;
+            }
+        });
+
+
+    }
+
+    private void createSearchQueries(MenuItem myActionMenuItem) {
+
+        fillInTaskList();
+        SPDatabase spDatabase = new SPDatabase(this);
+        final SQLiteDatabase db = spDatabase.getReadableDatabase();
+
+        Cursor cursor = DBHelper.getAllTaskNames(db, "");
+
+        final SearchView searchView = (SearchView) myActionMenuItem.getActionView();
+
+        adapter = new SearchCursorAdapter(this, cursor, 0);
+
+        searchView.setSuggestionsAdapter(adapter);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.putExtra("searchQuery", query);
+                startActivity(intent);
+                db.close();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                if (newText.length()>=2) {
+                    adapter.setFilterQueryProvider(new FilterQueryProvider() {
+                        @Override
+                        public Cursor runQuery(CharSequence constraint) {
+                            return DBHelper.getAllTaskNames(db, constraint.toString());
+                        }
+                    });
+                }
+                return false;
+            }
+        });
+    }
+
+    private void fillInTaskList() {
+
+        SPDatabase spDb = new SPDatabase(getApplicationContext());
+        taskTexts = DBHelper.getAllTasksForAutoComplete(spDb.getReadableDatabase());
+
+        spDb.close();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

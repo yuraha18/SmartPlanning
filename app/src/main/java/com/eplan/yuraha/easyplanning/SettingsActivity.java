@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -27,6 +28,9 @@ public class SettingsActivity extends BaseActivity implements
         final View contentView = inflater.inflate(R.layout.activity_settings, null, false);
         drawer.addView(contentView, 0);
 
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setVisibility(View.INVISIBLE);
+        
         getFragmentManager().beginTransaction()
                 .replace(R.id.activity_settings, new SettingsFragment(this)).commit();
 

@@ -2,6 +2,7 @@ package com.eplan.yuraha.easyplanning;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -35,17 +36,19 @@ public class AddGoalFragment extends Fragment {
     private EditText goalName, goalNote;
     private SQLiteDatabase writableDb ;
     private SQLiteDatabase readableDb ;
-
-    private View view;
+    FloatingActionButton fab;
 
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public AddGoalFragment() {
+    public AddGoalFragment(FloatingActionButton fab) {
+        this.fab = fab;
     }
 
+    public AddGoalFragment() {
+    }
 
     /**
      * Use this factory method to create a new instance of
@@ -75,8 +78,6 @@ public class AddGoalFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fragment_add_task, container, false);
-
         SPDatabase db = new SPDatabase(getActivity());
         writableDb = db.getWritableDatabase();
         readableDb = db.getReadableDatabase();
@@ -92,8 +93,6 @@ public class AddGoalFragment extends Fragment {
 
         View contentView = inflater.inflate(R.layout.activity_add_goal, null, false);
 
-
-
         Button setDeadline = (Button) contentView.findViewById(R.id.setDeadline);
         setDeadline.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,6 +103,8 @@ public class AddGoalFragment extends Fragment {
 
         goalName  = (EditText) contentView.findViewById(R.id.goalName);
         goalNote  = (EditText) contentView.findViewById(R.id.goalNote);
+
+        fab.setVisibility(View.INVISIBLE);
 
 
         final Button addGoal = (Button) contentView.findViewById(R.id.addGoal);
@@ -231,6 +232,7 @@ public class AddGoalFragment extends Fragment {
                     }
                 }, mYear, mMonth, mDay);
         dpd.show();
+        dpd.getDatePicker().setMinDate(calendar.getTimeInMillis());
 
     }
 

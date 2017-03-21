@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -43,13 +44,15 @@ public class GoalListsFragment extends Fragment {
     private DoneGoalsListFragment doneGoalsListFragment;
     private InProgressGoalListFragment inProgressGoalListFragment;
     ViewGroup appBarLayout;
+    FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
 
-    public GoalListsFragment(AppBarLayout appBarLayout, GoalsActivity goalsActivity)
+    public GoalListsFragment(AppBarLayout appBarLayout, GoalsActivity goalsActivity, FloatingActionButton fab)
     {
         this.appBarLayout = appBarLayout;
 this.activity = goalsActivity;
+        this.fab = fab;
     }
 
     public GoalListsFragment()
@@ -93,13 +96,7 @@ this.activity = goalsActivity;
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
-
-        SPDatabase db = new SPDatabase(getActivity());
-        readableDb = db.getReadableDatabase();
-
         View contentView = inflater.inflate(R.layout.goal_list_fragment, null, false);
-        System.out.println("i rebuild al");
         viewPager = (ViewPager) contentView.findViewById(R.id.viewpager);
         setupViewPager(viewPager);
 
@@ -116,10 +113,9 @@ this.activity = goalsActivity;
 
     private void setupViewPager(ViewPager viewPager) {
         doneGoalsListFragment = new DoneGoalsListFragment();
-        inProgressGoalListFragment = new InProgressGoalListFragment(doneGoalsListFragment, activity);
+        inProgressGoalListFragment = new InProgressGoalListFragment(doneGoalsListFragment, activity, fab);
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(activity.getSupportFragmentManager());
-        System.out.println("setup view pager");
         adapter.addFragment(inProgressGoalListFragment, getResources().getString(R.string.inProgressGoalsTab));
         adapter.addFragment(doneGoalsListFragment, getResources().getString(R.string.doneGoalsTab));
 
@@ -162,6 +158,12 @@ this.activity = goalsActivity;
     public void onResume() {
         super.onResume();
         setupViewPager(viewPager);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        fab.setVisibility(View.VISIBLE);
     }
 
     /**

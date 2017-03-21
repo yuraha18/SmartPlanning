@@ -259,7 +259,7 @@ public class SettingsFragment extends PreferenceFragment implements
         HashSet<Long> notificationIds = DBHelper.getAllNotifications(readableDb);
 
         for (long id : notificationIds)
-        {System.out.println(id);
+        {
             ManagerNotifications.cancelNotifications(readableDb, id+"", context);
         }
     }

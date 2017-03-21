@@ -225,6 +225,8 @@
 
     <string name="notificationTitle">Нагадування</string>
 
+    <string name="search">Пошук</string>
+
     <string name="timeForPlanning">Настав час планування</string>
 
     <!-- TODO: Remove or change this placeholder text -->

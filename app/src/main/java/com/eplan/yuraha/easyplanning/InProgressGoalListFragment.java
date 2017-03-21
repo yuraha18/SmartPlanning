@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +35,7 @@ public class InProgressGoalListFragment extends ListFragment {
 
     private ArrayList<Goal> goalsList;
     private DoneGoalsListFragment doneGoalsListFragment;
+    FloatingActionButton fab;
 
     private SQLiteDatabase readableDb ;
     InProgressListViewAdapter adapter;
@@ -41,10 +43,10 @@ public class InProgressGoalListFragment extends ListFragment {
     View view;
     private OnFragmentInteractionListener mListener;
 
-    public InProgressGoalListFragment(DoneGoalsListFragment doneGoalsListFragment, AppCompatActivity activity) {
+    public InProgressGoalListFragment(DoneGoalsListFragment doneGoalsListFragment, AppCompatActivity activity, FloatingActionButton fab) {
         this.doneGoalsListFragment = doneGoalsListFragment;
         this.activity = activity;
-        System.out.println("in progress constr");
+        this.fab = fab;
     }
 
     public InProgressGoalListFragment() {
@@ -76,7 +78,6 @@ public class InProgressGoalListFragment extends ListFragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        System.out.println("in progress oncreate");
         SPDatabase db = new SPDatabase(getActivity());
         readableDb = db.getReadableDatabase();
     }
@@ -90,7 +91,7 @@ public class InProgressGoalListFragment extends ListFragment {
         ListView listView = (ListView) view.findViewById(R.id.goalsListView);
         fillInGoalsList();
 
-                adapter=new InProgressListViewAdapter(goalsList, readableDb, getContext(), doneGoalsListFragment, activity, getParentFragment());
+                adapter=new InProgressListViewAdapter(goalsList, readableDb, getContext(), doneGoalsListFragment, activity, getParentFragment(), fab);
         listView.setAdapter(adapter);
 
 
@@ -151,7 +152,6 @@ public class InProgressGoalListFragment extends ListFragment {
 * requestCode =2 edit goal*/
 //
         if (requestCode == 1) {
-            System.out.println("im here");
             String goalId =   data.getStringExtra("id");
            // Goal goal = DBHelper.getGoalFromId(readableDb, goalId);
 

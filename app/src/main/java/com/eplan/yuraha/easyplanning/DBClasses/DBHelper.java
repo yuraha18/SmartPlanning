@@ -13,6 +13,7 @@ import com.eplan.yuraha.easyplanning.DayStatistic;
 import com.eplan.yuraha.easyplanning.ListAdapters.Goal;
 import com.eplan.yuraha.easyplanning.ListAdapters.Task;
 import com.eplan.yuraha.easyplanning.ManagerNotifications;
+import com.eplan.yuraha.easyplanning.TaskListFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +33,8 @@ public class DBHelper {
                                   String remindTime, Context context){
         try {
             long taskID = addToTasksTable(db, text, priority);
+
+            if (remindTime!=null)
             addToRemindingTable(db, taskID, remindTime);
 
             // if user chosen repeat every week, add info about repeating day in MonthRepeating table
@@ -48,7 +51,7 @@ public class DBHelper {
 
             addToInProgressTasks(db, taskID);
 
-            if (checkedGoals.size() > 0)
+            if (checkedGoals!= null && checkedGoals.size() > 0)
                 addToTaskToGoalTable(db, taskID, checkedGoals);
 
             //create new row in TaskLifecycleTable where first day from list will be FROM_DAY
@@ -75,6 +78,7 @@ public class DBHelper {
         value.put("TASK_ID", taskID);
         value.put("DAY_ID", dayId);
        long id = db.insert("Notifications", null, value);
+        value.clear();
         return id;
     }
 
@@ -84,6 +88,7 @@ public class DBHelper {
             Cursor cursor = db.rawQuery("SELECT * FROM Notifications ORDER BY _id DESC LIMIT 1" , null);
             if (cursor .moveToFirst())
                 return cursor.getInt(0);
+            cursor.close();
         }
         catch (Exception e){return 0;}
 
@@ -108,6 +113,7 @@ public class DBHelper {
         if (cursor .moveToFirst())
             return cursor.getLong(0);
 
+        cursor.close();
         return -1;
     }
 
@@ -123,6 +129,8 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+
+        cursor.close();
         return notifIdSet;
     }
 
@@ -142,6 +150,7 @@ public class DBHelper {
             }
         }
 
+        cursor.close();
         return notifIdList;
     }
     private static void addToMonthRepeatingTable(SQLiteDatabase db, String taskID, String calledDay) {
@@ -150,6 +159,7 @@ public class DBHelper {
         value.put("TASK_ID", taskID);
         value.put("DAY_OF_MONTH", dayOfMonth);
         db.insert("MonthRepeating", null, value);
+        value.clear();
     }
 
     /* here im adding the earliest day from chosen days to db like DAY_FROM in tasklifecycle
@@ -168,6 +178,7 @@ public class DBHelper {
         value.put("DAY_FROM_ID", dayID);
         value.put("DAY_TO_ID", -1);
         long id = db.insert("TaskLifecycle", null, value);
+        value.clear();
 
 
     }
@@ -200,6 +211,8 @@ public class DBHelper {
                 addTask(db, text, priority, chosenDays, todaysDay, isRepeatEveryMonth, checkedGoals, remindTime, context);
             }
 
+            chosenDays.clear();
+
         }
         catch (SQLiteException e)
         {return false;}
@@ -225,7 +238,6 @@ public class DBHelper {
         try {
         ManagerNotifications.cancelNotifications(db, taskID, context);
             deleteNotifications(db, taskID);
-            System.out.println("updateNotifications");
         ManagerNotifications.createNotifications(db, context, taskID);
             db.setTransactionSuccessful();
         }
@@ -289,9 +301,15 @@ public class DBHelper {
             }
         }
 
+        cursor.close();
         return tasks;
     }
 
+    public static Cursor getAllTaskNames(SQLiteDatabase db, String query)
+    {
+        Cursor cursor = db.query(true, "Tasks", new String[] {"_id", "TASK_TEXT", "PRIORITY" }, "TASK_TEXT LIKE ?", new String[] {"%"+ query+ "%" }, "TASK_TEXT", null, null, null);
+        return cursor;
+    }
 
     public static boolean isInDoneTasksTable(SQLiteDatabase db, long taskId, String day)
     {
@@ -305,6 +323,7 @@ public class DBHelper {
         if (cursor.moveToFirst())
             return true;
 
+cursor.close();
 
         return false;
     }
@@ -336,6 +355,7 @@ public class DBHelper {
         int updCount = db.update("Tasks", value, "_id = ?",
                 new String[] { taskID });
 
+        value.clear();
 
         if (updCount<1)
             throw new SQLiteException("cant update RemindTable");
@@ -362,7 +382,7 @@ public class DBHelper {
         int updCount = db.update("Reminding", value, "TASK_ID = ?",
                 new String[] { taskID });
 
-
+value.clear();
         if (updCount<1)
             throw new SQLiteException("cant update RemindTable");
     }
@@ -389,8 +409,13 @@ public class DBHelper {
                 null, null,null);
 
         if (cursor.moveToFirst())
-            return cursor.getLong(0);
+        {
+            long id = cursor.getLong(0);
+            cursor.close();
+            return id;
+        }
 
+        cursor.close();
 
         return -1;
     }
@@ -399,6 +424,8 @@ public class DBHelper {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
         long id = db.insert("InProgressTasks", null, value);
+
+        value.clear();
 
         if (id < 0)
             throw new SQLiteException("id=-1 in addToInProgressTasks");
@@ -414,7 +441,7 @@ public class DBHelper {
         value.put("DAY_ID", dayID);
         long repeatID = db.insert("Repeating", null, value);
 
-
+value.clear();
         if (repeatID < 0)
             throw new SQLiteException("id=-1 in addToRepeatingTable");
         return repeatID;
@@ -427,6 +454,7 @@ public class DBHelper {
         value.put("TIME", time);
         long remindID = db.insert("Reminding", null, value);
 
+        value.clear();
         if (remindID < 0)
             throw new SQLiteException("id=-1 in addToRemindingTable");
         return remindID;
@@ -439,6 +467,7 @@ public class DBHelper {
         value.put("PRIORITY", priority);
         long taskID = db.insert("Tasks", null, value);
 
+        value.clear();
         if (taskID < 0)
             throw new SQLiteException("id=-1 in addToTasksTable");
 
@@ -456,6 +485,7 @@ public class DBHelper {
         value.put("DAY", date);
         dateID = db.insert("Days", null, value);
 
+        value.clear();
         if (dateID < 0)
             throw new SQLiteException("id=-1 in addToDateTable");
         return dateID;
@@ -469,9 +499,12 @@ public class DBHelper {
                 new String[] {date},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getLong(0);
-
+        if (cursor.moveToFirst()) {
+            long id = cursor.getLong(0);
+            cursor.close();
+            return id;
+        }
+        cursor.close();
 
         return -1;
     }
@@ -493,6 +526,7 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+        cursor.close();
 
         return idList;
     }
@@ -509,9 +543,9 @@ public class DBHelper {
             if (taskIdList.isEmpty())
                 return false;
 
+
             for (Long taskID : taskIdList) {
                 for (String day : days) {
-                    System.out.println(day + " : " + taskID + "-"+sendedId);
 
                     if (taskID == sendedId) {
                         break;
@@ -538,16 +572,19 @@ public class DBHelper {
         /* if im sending simple day, like 5-10-2017 im in this if
           * it gets all task names from method similar to gettingAllTasksForDay and check if there are
            * the same taskName*/
-        if (!AddTaskFragment.weekDays.contains(day)) {
+        if (!AddTaskFragment.weekDays.contains(day) &&
+                AddTaskFragment.compareTwoDates(day, TaskListFragment.getTodaysDay()) >= 0) {
             ArrayList<String> taskNamesList = getTaskNamesFromRepeatingTable(db, day);
 
+            boolean result = false;
             if (taskNamesList.contains(taskName))
-                return true;
+                result = true;
 
-            return false;
+            taskNamesList.clear();
+            return result;
         }
 
-        long dayId = getDayFromString(db, day);
+        long dayId = addToDateTable(db, day);
         int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
         ArrayList<Long> taskIds = new ArrayList<>();
@@ -556,10 +593,13 @@ public class DBHelper {
 
         taskIds = checkOutAllTasksOnDeleting(db, taskIds, dayId);
 
-        if (taskIds.contains(taskID))
-            return true;
+        boolean result = false;
 
-        return false;
+        if (taskIds.contains(taskID))
+            result = true;
+
+        taskIds.clear();
+        return result;
 
     }
 
@@ -580,6 +620,9 @@ public class DBHelper {
             String taskText = getTaskTextFromId(db, taskId+"");
             namesList.add(taskText);
         }
+
+        list.clear();
+
         return namesList;
     }
 
@@ -592,10 +635,13 @@ public class DBHelper {
                 new String[]{goalName},
                 null, null, null);
 
+        boolean result = false;
         if (cursor.moveToFirst())
-            return true;
+            result = true;
 
-        return false;
+        cursor.close();
+
+        return result;
     }
 
     /* Override method isGoalExist for editing goals */
@@ -607,19 +653,16 @@ public class DBHelper {
                 new String[]{goalName},
                 null, null, null);
 
+        boolean result = false;
         if (cursor.moveToFirst())
         {
             String id = cursor.getString(0);
             if (!id.equalsIgnoreCase(goalId))
-                return true;
-
-            else
-                return false;
-
+                result = true;
         }
 
-
-        return false;
+        cursor.close();
+        return result;
     }
 
     public static long addGoalToDB(SQLiteDatabase db, String text, String note, String deadline)
@@ -632,6 +675,8 @@ public class DBHelper {
             value.put("NOTICE", note);
             value.put("DEADLINE", dayId);
             goalId = db.insert("Goals", null, value);
+
+            value.clear();
 
             if (goalId < 0)
                 throw new SQLiteException("id=-1 in addGoalToDB");
@@ -654,7 +699,7 @@ public class DBHelper {
         ContentValues value = new ContentValues();
         value.put("GOAL_ID", goalId);
         long id = db.insert("InProgressGoals", null, value);
-
+        value.clear();
         if (id < 0)
             throw new SQLiteException("id=-1 in addToInProgressGoals");
     }
@@ -668,8 +713,11 @@ public class DBHelper {
                 new String[] {dayId},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getString(0);
+        if (cursor.moveToFirst()) {
+            String id = cursor.getString(0);
+            cursor.close();
+            return id;
+        }
 
 
         throw new SQLiteException();
@@ -696,6 +744,8 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+
+        cursor.close();
         return daysList;
     }
 
@@ -712,6 +762,7 @@ public class DBHelper {
         try {
             id = db.insert("DoneGoals", null, value);
             db.delete("InProgressGoals", "GOAL_ID" + " = ?", new String[] { goalId });
+            value.clear();
             db.setTransactionSuccessful();
         }
         catch (Exception e){}
@@ -736,7 +787,7 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
-
+cursor.close();
         return goals;
     }
 
@@ -755,6 +806,8 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+
+        cursor.close();
         return goals;
     }
 
@@ -776,6 +829,8 @@ public class DBHelper {
 
         else
             throw new SQLiteException("goalId not found");
+
+        cursor.close();
 
         return goal;
     }
@@ -812,8 +867,11 @@ public class DBHelper {
                 new String[] {taskId},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getInt(0);
+        if (cursor.moveToFirst()) {
+            int id = cursor.getInt(0);
+            cursor.close();
+            return id;
+        }
 
         return -1;
 
@@ -841,6 +899,8 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+
+        cursor.close();
         return daysList;
     }
     private static boolean isGoalAttachedToTasks(SQLiteDatabase db, String goalId) {
@@ -850,10 +910,12 @@ public class DBHelper {
                 new String[] {goalId},
                 null, null,null);
 
+        boolean result = false;
         if (cursor.moveToFirst())
-            return true;
+            result = true;
 
-        return false;
+        cursor.close();
+        return result;
     }
 
     public static boolean updateGoal(SQLiteDatabase db, String text, String note, String goalId)
@@ -865,6 +927,7 @@ public class DBHelper {
             int updCount = db.update("Goals", value, "_id = ?",
                     new String[] { goalId });
 
+            value.clear();
             if (updCount < 0)
                 return false;
         }
@@ -890,7 +953,7 @@ public class DBHelper {
         if (cursor.moveToFirst())
         {
             dateId = cursor.getLong(0);
-
+            cursor.close();
 
             return getDayFromId(db, dateId+"");
         }
@@ -916,43 +979,59 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
-
+ cursor.close();
         return goals;
     }
 
     public static ArrayList<Task> getAllTasksFromDay(SQLiteDatabase db, String day, String dayOfWeek)
-    {
-        ArrayList<Task> inProgressTasks = new ArrayList<>();
-        ArrayList<Task> doneTasks = new ArrayList<>();
+    { ArrayList<Task> inProgressTasks = new ArrayList<>();
+        try {
 
-        long dayID = addToDateTable(db, day);
-        long dayOfWeekId = addToDateTable(db, dayOfWeek);
-        int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
+            ArrayList<Task> doneTasks = new ArrayList<>();
 
-        ArrayList<Long> tasksIdList =  getTasksListFromRepeatingTable(db, dayID, dayOfWeekId, dayOfMonth);
+            long dayID = addToDateTable(db, day);
+            long dayOfWeekId = addToDateTable(db, dayOfWeek);
+            int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
-        for (Long taskId : tasksIdList)
-        {
-            String taskText = getTaskTextFromId(db, taskId+"");
-            int priority = getTaskPriorityFromID(db, taskId);
-            boolean isDone = isInDoneTasksTable(db, taskId, day);
-            ArrayList<String> goals = getTaskGoals(db, taskId+"");
-            Task task = new Task(taskId, taskText, priority, isDone, goals);
+            ArrayList<Long> tasksIdList =  getTasksListFromRepeatingTable(db, dayID, dayOfWeekId, dayOfMonth);
 
-            // if task is done put it to the end of list (and listView). If now done - to the top
-            if (isDone)
-                doneTasks.add(task);
-            else
-                inProgressTasks.add(task);
+            for (Long taskId : tasksIdList)
+            {
+                String taskText = getTaskTextFromId(db, taskId+"");
+                int priority = getTaskPriorityFromID(db, taskId);
+                boolean isDone = isInDoneTasksTable(db, taskId, day);
+                ArrayList<String> goals = getTaskGoals(db, taskId+"");
+                Task task = new Task(taskId, taskText, priority, isDone, goals);
 
+                // if task is done put it to the end of list (and listView). If now done - to the top
+                if (isDone)
+                    doneTasks.add(task);
+                else
+                    inProgressTasks.add(task);
+
+            }
+
+            doneTasks = sortTaskList(doneTasks);// sort list
+            inProgressTasks = sortTaskList(inProgressTasks);// sort list
+
+            inProgressTasks.addAll(doneTasks);//merge two lists
+            doneTasks.clear();
         }
+        catch (Exception e){}
 
-        doneTasks = sortTaskList(doneTasks);// sort list
-        inProgressTasks = sortTaskList(inProgressTasks);// sort list
-
-        inProgressTasks.addAll(doneTasks);//merge two lists
 
         return inProgressTasks;
+    }
+
+    public static Task getTaskFromId(SQLiteDatabase db, long taskId)
+    {
+        String taskText = getTaskTextFromId(db, taskId+"");
+        int priority = getTaskPriorityFromID(db, taskId);
+        boolean isDone = false;
+        ArrayList<String> goals = getTaskGoals(db, taskId+"");
+        Task task = new Task(taskId, taskText, priority, isDone, goals);
+
+        return task;
     }
 
     private static ArrayList<Task> sortTaskList(ArrayList<Task> taskList) {
@@ -980,8 +1059,11 @@ public class DBHelper {
                 new String[] {id},
                 null, null,null);
 
-        if (cursor .moveToFirst())
-            return cursor.getString(0);
+        if (cursor .moveToFirst()) {
+            String dayId = cursor.getString(0);
+            cursor.close();
+            return dayId;
+        }
 
         throw new SQLiteException();
 
@@ -990,6 +1072,7 @@ public class DBHelper {
 
     public static DayStatistic getStatisticForDay(SQLiteDatabase db, String day)
     {
+
         try {
             long dayId = addToDateTable(db, day);
 
@@ -1008,6 +1091,7 @@ public class DBHelper {
             {
                 int countDone = cursor.getInt(0);
                 int counInProgress = cursor.getInt(1);
+                  cursor.close();
 
                 return new DayStatistic(countDone, counInProgress);
             }
@@ -1026,7 +1110,6 @@ public class DBHelper {
 
     public static DayStatistic addDayToStatistic(SQLiteDatabase db, String day)
     {
-
         long dayId = getDayFromString(db, day);
         int dayOfWeek = AddTaskFragment.getDayOfWeek(day, Constants.DATEFORMAT);
         int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
@@ -1057,15 +1140,24 @@ public class DBHelper {
                 countInProgress += (priority * countGoals);// not done goals counting like done one
         }
 
+        taskList.clear();
+        // if day was in past, add values to special Table
+        if (AddTaskFragment.compareTwoDates(day, TaskListFragment.getTodaysDay())<0)
+        insertDayStatistic(db, dayId, countDone, countInProgress);
+
+        return new DayStatistic(countDone, countInProgress);
+    }
+
+    private static void insertDayStatistic(SQLiteDatabase db, long dayId, int countDone, int countInProgress) {
         /* inserting information in DB*/
         ContentValues value = new ContentValues();
         value.put("DAY_ID", dayId);
         value.put("COUNT_DONE", countDone);
         value.put("COUNT_IN_PROGRESS", countInProgress);
-         db.insert("Statistic", null, value);
-
-        return new DayStatistic(countDone, countInProgress);
+        db.insert("Statistic", null, value);
+        value.clear();
     }
+
 
     public static ArrayList<Long> getTasksListFromRepeatingTable(SQLiteDatabase db, long dayID, long dayOfWeekId, int dayOfMonth) {
         ArrayList<Long> list1 = getListFromRepeatingTable(db, dayID);// get tasks for single day
@@ -1078,7 +1170,13 @@ public class DBHelper {
         allTasks.addAll(list2);
         allTasks.addAll(list3);
 
+        list1.clear();
+        list2.clear();
+        list3.clear();
+
+        System.out.println("before" + allTasks.size());
         allTasks = new ArrayList<>(new LinkedHashSet<>(allTasks));// delete duplicates in list, if exists
+        System.out.println("after" + allTasks.size());
         //return only tasks not deleted in this day
         return checkOutAllTasksOnDeleting(db, allTasks, dayID);
 
@@ -1103,6 +1201,8 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+
+        cursor.close();
         return idList;
     }
 
@@ -1120,12 +1220,16 @@ public class DBHelper {
             while (cursor.isAfterLast() == false) {
                 try {
                     long taskId = cursor.getLong(0);
+
+                    if (isBetweenDayFromDayTo(db, taskId, dayID))
                     idList.add(taskId);
                 }
                 catch (Exception e){}
                 cursor.moveToNext();
             }
         }
+
+        cursor.close();
         return idList;
     }
 
@@ -1162,8 +1266,11 @@ public class DBHelper {
                 new String[] {taskId},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getString(0);
+        if (cursor.moveToFirst()) {
+            String time = cursor.getString(0);
+            cursor.close();
+            return time;
+        }
 
 
         else
@@ -1192,6 +1299,7 @@ public class DBHelper {
                 cursor.moveToNext();
             }
         }
+        cursor.close();
         return goalList;
     }
 
@@ -1202,8 +1310,11 @@ public class DBHelper {
                 new String[] {goalId+""},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getString(0);
+        if (cursor.moveToFirst()) {
+            String goalText = cursor.getString(0);
+            cursor.close();
+            return goalText;
+        }
 
 
         throw new SQLiteException();
@@ -1218,8 +1329,11 @@ public class DBHelper {
                 new String[] {taskId},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getInt(0);
+        if (cursor.moveToFirst()) {
+            int priority = cursor.getInt(0);
+            cursor.close();
+            return priority;
+        }
 
         else
             return 1;
@@ -1235,8 +1349,11 @@ public class DBHelper {
                 new String[] {taskId+""},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getInt(0);
+        if (cursor.moveToFirst()) {
+            int priority = cursor.getInt(0);
+            cursor.close();
+            return priority;
+        }
 
 
         throw new SQLiteException();
@@ -1249,8 +1366,11 @@ public class DBHelper {
                 new String[] {taskId+""},
                 null, null,null);
 
-        if (cursor.moveToFirst())
-            return cursor.getString(0);
+        if (cursor.moveToFirst()) {
+            String taskText = cursor.getString(0);
+            cursor.close();
+            return taskText;
+        }
 
 
         throw new SQLiteException();
@@ -1293,7 +1413,7 @@ public class DBHelper {
         return false;
     }
 
-    private static String getDayToByTaskId(SQLiteDatabase db, String taskID) throws SQLiteException {
+    public static String getDayToByTaskId(SQLiteDatabase db, String taskID) throws SQLiteException {
         Cursor cursor = db.query ("TaskLifecycle",
                 new String[] {"DAY_TO_ID"},
                 "TASK_ID = ?",
@@ -1304,6 +1424,7 @@ public class DBHelper {
         {
             String dayId = cursor.getString(0);
 
+            cursor.close();
             if (dayId.equals("-1"))
                 return "-1";
 
@@ -1323,6 +1444,7 @@ public class DBHelper {
         if (cursor.moveToFirst())
         {
             String dayId = cursor.getString(0);
+            cursor.close();
             return getDayFromId(db, dayId);
         }
 
@@ -1330,6 +1452,7 @@ public class DBHelper {
     }
 
     public static boolean isInDeletedTable(SQLiteDatabase db, long taskId, long dayID) {
+        boolean result = false;
       try {
           Cursor cursor = db.query("DeletedTasks",
                   new String[]{"_id"},
@@ -1337,12 +1460,14 @@ public class DBHelper {
                   new String[]{taskId+"", dayID+""},
                   null, null, null);
           if (cursor.moveToFirst())
-              return true;
+              result = true;
+
+          cursor.close();
       }
-      catch (SQLiteException e){return false;}
+      catch (SQLiteException e){result = false;}
 
 
-        return false;
+        return result;
     }
 
     public static boolean deleteTaskFromDay(SQLiteDatabase db, long taskId, String day)
@@ -1353,8 +1478,8 @@ public class DBHelper {
             ContentValues value = new ContentValues();
             value.put("TASK_ID", taskId);
             value.put("DAY_ID", dayID);
-
             long id = db.insert("DeletedTasks", null, value);
+            value.clear();
 
             if (id < 0)
                 throw new SQLiteException("can't delete single task");
@@ -1373,7 +1498,7 @@ public class DBHelper {
             value.put("DAY_TO_ID", dayToId);
             int updCount = db.update("TaskLifecycle", value, "TASK_ID = ?",
                     new String[] { taskId+"" });
-
+         value.clear();
 
             if (updCount<1)
                 throw new SQLiteException("cant delete from whole days");
@@ -1395,6 +1520,8 @@ public class DBHelper {
 
         db.update(table, contentValues, Constants.DB_TABLE_ID + " = ?",
                 new String[] { id+"" });
+
+        contentValues.clear();
     }
 
 

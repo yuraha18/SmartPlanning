@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -52,8 +53,9 @@ public class InProgressListViewAdapter extends BaseAdapter {
     TextView timeToDeadline;
     String goalId;
     AppCompatActivity activity;
+    FloatingActionButton fab;
 
-    public InProgressListViewAdapter( ArrayList<Goal> list, SQLiteDatabase readableDb, Context context, DoneGoalsListFragment doneGoalsListFragment, AppCompatActivity activity, Fragment parentFragment){
+    public InProgressListViewAdapter(ArrayList<Goal> list, SQLiteDatabase readableDb, Context context, DoneGoalsListFragment doneGoalsListFragment, AppCompatActivity activity, Fragment parentFragment, FloatingActionButton fab){
         super();
         this.context = context;
         goalsList = list;
@@ -61,6 +63,7 @@ public class InProgressListViewAdapter extends BaseAdapter {
         this.doneGoalsListFragment = doneGoalsListFragment;
         this.activity = activity;
         goalListsFragment = parentFragment;
+        this.fab = fab;
     }
 
     @Override
@@ -187,7 +190,7 @@ public class InProgressListViewAdapter extends BaseAdapter {
         String goalId = goalsList.get(position).getId();
 
 
-        AddGoalFragment taskFragment = new AddGoalFragment();//create new fragment
+        AddGoalFragment taskFragment = new AddGoalFragment(fab);//create new fragment
         Bundle bundle = new Bundle();
         bundle.putBoolean("isEdit", true);//create data for sending with fragment
         bundle.putString("goalID", goalId);

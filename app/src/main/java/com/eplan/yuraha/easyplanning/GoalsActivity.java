@@ -51,20 +51,22 @@ GoalListsFragment.OnFragmentInteractionListener,
         View contentView = inflater.inflate(R.layout.activity_goals, null, false);
         drawer.addView(contentView, 0);
 
-
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        goalListsFragment = new GoalListsFragment(appBarLayout, this);//create new fragment
+        goalListsFragment = new GoalListsFragment(appBarLayout, this, fab);//create new fragment
         ft.add(R.id.addGoalFrame, goalListsFragment, "goalsList");
         ft.addToBackStack("goalsList");
         ft.commit();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+        fab.setVisibility(View.VISIBLE);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                AddGoalFragment taskFragment = new AddGoalFragment();//create new fragment
+                AddGoalFragment taskFragment = new AddGoalFragment(fab);//create new fragment
                 Bundle bundle = new Bundle();
                 bundle.putBoolean("isEdit", false);//create data for sending with fragment
                 taskFragment.setArguments(bundle);// sending is
@@ -72,6 +74,7 @@ GoalListsFragment.OnFragmentInteractionListener,
                 ft.replace(R.id.addGoalFrame, taskFragment, "AddGoal");
                 ft.addToBackStack("AddGoal");
                 ft.commit();
+                fab.setVisibility(View.INVISIBLE);
 
             }
         });

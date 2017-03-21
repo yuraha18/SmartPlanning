@@ -8,11 +8,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
@@ -37,17 +40,24 @@ public class MainActivity extends BaseActivity implements
         drawer.addView(contentView, 0);
 
         setUpEveryDayNotification(getApplicationContext());
+        String searchQuery = getIntent().getStringExtra("searchQuery");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
+
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        TaskListFragment taskFragment = new TaskListFragment(this, fab);//create new fragment
+        TaskListFragment taskFragment = new TaskListFragment(this, fab, searchQuery);//create new fragment
         ft.replace(R.id.addTaskFrame, taskFragment, "fr1");
         ft.addToBackStack("fr1");
         ft.commit();
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        System.out.println("im here");
+    }
     /* calls when MainActivity creates
     * but did something only when app creates firstly*/
     public void setUpEveryDayNotification(Context context) {

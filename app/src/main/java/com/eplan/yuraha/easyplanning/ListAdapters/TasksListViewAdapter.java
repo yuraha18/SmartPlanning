@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -14,19 +15,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.eplan.yuraha.easyplanning.AddGoalFragment;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.R;
 import com.eplan.yuraha.easyplanning.TaskListFragment;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import co.lujun.androidtagview.TagContainerLayout;
 
@@ -46,12 +44,15 @@ public class TasksListViewAdapter extends BaseAdapter {
     ImageView moreButton;
     Context context;
     TextView taskText;
+    FloatingActionButton fab;
+    public boolean isSearch;
+    String searchQuery;
     ImageView isDone;
     TagContainerLayout tagContainerLayout;
 
 
     private String[] months ;
-    public TasksListViewAdapter(TaskListFragment parentFragment, LayoutInflater inflater, ArrayList<Task> list, SQLiteDatabase readableDb, AppCompatActivity activity, Context context){
+    public TasksListViewAdapter(TaskListFragment parentFragment, LayoutInflater inflater, ArrayList<Task> list, SQLiteDatabase readableDb, AppCompatActivity activity, Context context, boolean isSearch, String searchQuery, FloatingActionButton fab){
         super();
         this.parentFragment = parentFragment;
         this.inflater = inflater;
@@ -59,6 +60,9 @@ public class TasksListViewAdapter extends BaseAdapter {
         this.context = context;
         tasksList = list;
         this.readableDb = readableDb;
+        this.isSearch = isSearch;
+        this.searchQuery = searchQuery;
+        this.fab = fab;
 
     }
 
@@ -83,8 +87,7 @@ public class TasksListViewAdapter extends BaseAdapter {
 
 public void setNewData(ArrayList<Task> list)
 {
-    tasksList.clear();
-    tasksList.addAll(list);
+   tasksList = list;
     notifyDataSetChanged();
 }
 {
@@ -101,13 +104,14 @@ public void setNewData(ArrayList<Task> list)
         isDone=(ImageView) convertView.findViewById(R.id.done_task);
         tagContainerLayout=(TagContainerLayout) convertView.findViewById(R.id.tagcontainerLayout);
         moreButton = (ImageView) convertView.findViewById(R.id.action_more_fragment);
+            fillInTextViews(position, convertView);
 
-        fillInTextViews(position, convertView);
         return convertView;
     }
 
     private void fillInTextViews(final int position, View convertView) {
         Task task = tasksList.get(position);
+
         int priority = task.getPriority();
 
         switch (priority)
@@ -126,6 +130,8 @@ public void setNewData(ArrayList<Task> list)
             isDone.setColorFilter(ContextCompat.getColor(context,R.color.highPriority));
 
 
+
+
        tagContainerLayout.setTags(task.getGoals());
 
         String todaysDay = parentFragment.getTodaysDay();
@@ -138,6 +144,10 @@ public void setNewData(ArrayList<Task> list)
         }
         else
             moreButton.setVisibility(View.INVISIBLE);
+
+        if (isSearch)
+            isDone.setVisibility(View.INVISIBLE);
+
     }
 
     private void setOnClickListenerForIsDoneButton(final int position) {
@@ -157,7 +167,7 @@ public void setNewData(ArrayList<Task> list)
                     isDone.setColorFilter(ContextCompat.getColor(context,R.color.lowPriority));
                     Toast.makeText(activity, activity.getResources().getString(R.string.goodJob), Toast.LENGTH_SHORT).show();
                 }
-
+                parentFragment.setDayRating();//update day rating in ratingBar
                 updateListView();
             }
         });
@@ -170,6 +180,13 @@ public void setNewData(ArrayList<Task> list)
             public void onClick(View v) {
                 final PopupMenu popup = new PopupMenu(context, v);
                 popup.getMenuInflater().inflate(R.menu.task_fragment_menu, popup.getMenu());
+
+                if (isSearch)
+                {
+                   MenuItem item = popup.getMenu().findItem(R.id.delete_task);
+                    item.setVisible(false);
+                }
+
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
                         int i = item.getItemId();
@@ -203,6 +220,7 @@ public void setNewData(ArrayList<Task> list)
                 .setPositiveButton(R.string.acceptWithQuestion, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         deleteTaskFromAllDays(position);
+                        parentFragment.setDayRating();//update day rating in ratingBar
                     }
                 })
                 .setNegativeButton(R.string.declineWithQuestion, new DialogInterface.OnClickListener() {
@@ -232,30 +250,34 @@ public void setNewData(ArrayList<Task> list)
             Toast.makeText(context, context.getResources().getString(R.string.cantDeleteException), Toast.LENGTH_LONG).show();
             return;
         }
-
+        parentFragment.setDayRating();//update day rating in ratingBar
         updateListView();
     }
 
     private void updateListView() {
+        ArrayList<Task> updatedTaskList;
+        if (isSearch && searchQuery!=null)
+            updatedTaskList = TaskListFragment.fillInTaskListForSearchQuery(readableDb, searchQuery);
 
-        int dayOfWeek = AddTaskFragment.getDayOfWeek(parentFragment.getDayFromSpinner(), TaskListFragment.dateFormat);
-        ArrayList<Task> updatedTaskList = DBHelper.getAllTasksFromDay(readableDb, parentFragment.getDayFromSpinner(), TaskListFragment.weekDays[dayOfWeek]);
+
+        else {
+            int dayOfWeek = AddTaskFragment.getDayOfWeek(parentFragment.getDayFromSpinner(), TaskListFragment.dateFormat);
+            updatedTaskList = DBHelper.getAllTasksFromDay(readableDb, parentFragment.getDayFromSpinner(), TaskListFragment.weekDays[dayOfWeek]);
+        }
+
         setNewData(updatedTaskList);
     }
 
     private void editTask(int position) {
+
         long taskId = tasksList.get(position).getId();
-        AddTaskFragment taskFragment = new AddTaskFragment();//create new fragment
+        AddTaskFragment taskFragment = new AddTaskFragment(activity);//create new fragment
         Bundle bundle = new Bundle();
         bundle.putBoolean("isEdit", true);//create data for sending with fragment
         bundle.putString("taskID", taskId+"");
         bundle.putString("calledDay", parentFragment.getDayFromSpinner());
         taskFragment.setArguments(bundle);// sending is
         activity.getSupportFragmentManager().beginTransaction().replace(R.id.addTaskFrame, taskFragment, "editTask").addToBackStack("editTask").commit();
-
-
+    fab.setVisibility(View.INVISIBLE);
     }
-
-
-
 }

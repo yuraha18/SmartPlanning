@@ -54,6 +54,7 @@
         android:layout_toRightOf="@id/task_text"/>
 
     <RelativeLayout
+        android:id="@+id/goalsLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/priority_bell"
@@ -72,5 +73,12 @@
             android:id="@+id/tagcontainerLayout"
             app:tag_theme="pure_teal" />
     </RelativeLayout>
+
+    <TextView android:layout_width="wrap_content"
+        android:id="@+id/taskWasDeleted"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/goalsLayout"
+        android:layout_toStartOf="@id/goalsLayout"
+        />
 </android.support.percent.PercentRelativeLayout >
 

@@ -1,27 +1,27 @@
 package com.eplan.yuraha.easyplanning;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
@@ -37,10 +37,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -119,6 +116,7 @@ public class AddTaskFragment extends Fragment {
 
     private ArrayList<CharSequence> allGoals = new ArrayList<>();
     Spinner prioritySpinner ;
+    AppCompatActivity activity;
     private View view;//link on main view
 
 
@@ -131,11 +129,19 @@ public class AddTaskFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    public AddTaskFragment( AppCompatActivity activity) {
+        this.activity = activity;
+        chosenDays = new ArrayList<>();
+        checkedDays = new ArrayList<>();
+        checkedGoals = new ArrayList<>();
+    }
+
     public AddTaskFragment() {
         chosenDays = new ArrayList<>();
         checkedDays = new ArrayList<>();
         checkedGoals = new ArrayList<>();
     }
+
 
     /**
      * Use this factory method to create a new instance of
@@ -175,6 +181,9 @@ public class AddTaskFragment extends Fragment {
         repeatText = (TextView) view.findViewById(R.id.repeatText);
         calledDay = getArguments().getString("calledDay");
 
+       activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        setHasOptionsMenu(true);
         initSpinner();
         setAutoCompleteForTaskText();
         initDoneButton();
@@ -210,6 +219,17 @@ public class AddTaskFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Get item selected and deal with it
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                //called when the up affordance/carat in actionbar is pressed
+                getActivity().onBackPressed();
+                return true;
+        }
+        return false;
+    }
     private void initShortWeekDays()
     {
         weekDaysShort = new String[]{
