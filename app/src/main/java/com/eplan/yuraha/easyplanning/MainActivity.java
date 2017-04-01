@@ -2,23 +2,35 @@ package com.eplan.yuraha.easyplanning;
 
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.MenuItem;
-import android.widget.Toast;
 
+import com.eplan.yuraha.easyplanning.API.ApiService;
+import com.eplan.yuraha.easyplanning.API.DBSynchronizer;
+import com.eplan.yuraha.easyplanning.API.SynchObject;
+import com.eplan.yuraha.easyplanning.API.Synchronizer;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
+import com.eplan.yuraha.easyplanning.dto.DTOTask;
+import com.eplan.yuraha.easyplanning.dto.Time;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MainActivity extends BaseActivity implements
@@ -27,6 +39,7 @@ public class MainActivity extends BaseActivity implements
         TaskListFragment.OnFragmentInteractionListener
 {
 
+    public static long userId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +54,19 @@ public class MainActivity extends BaseActivity implements
 
         setUpEveryDayNotification(getApplicationContext());
         String searchQuery = getIntent().getStringExtra("searchQuery");
-
+        
+        System.out.println("connection: " + InternetListener.hasActiveInternetConnection(this));
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+        allTasks();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Synchronizer.startSynchronization(getApplicationContext());
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
 
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -51,12 +75,21 @@ public class MainActivity extends BaseActivity implements
         ft.addToBackStack("fr1");
         ft.commit();
 
+
+
     }
+
+    private void allTasks() {
+        ArrayList<DTOTask> list = DBSynchronizer.allTasks(this);
+
+        for (DTOTask task : list)
+            System.out.println(task);
+    }
+
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        System.out.println("im here");
     }
     /* calls when MainActivity creates
     * but did something only when app creates firstly*/
@@ -100,4 +133,5 @@ public class MainActivity extends BaseActivity implements
     public void onFragmentInteraction(Uri uri) {
 
     }
+
 }

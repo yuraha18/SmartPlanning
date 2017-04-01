@@ -1,5 +1,7 @@
 package com.eplan.yuraha.easyplanning;
 
+import java.util.HashMap;
+
 /**
  * Created by yuraha18 on 3/5/2017.
  */
@@ -26,5 +28,20 @@ public final class Constants {
     public static final String DB_NOTIF_REMIND_TIME = "REMIND_TIME";
 
     public static final String DATEFORMAT = "dd-MM-yyyy";
+
+
+    public static final String LAST_SYNCH_TIME = "lastSynchTime";
+
+    public static final HashMap<String, Integer> dbTables = new HashMap<>();
+
+    public static final String PROPERTIES_PATH = ".properties";
+    public static final String LAST_UPDATE_TIME = "lastUpdateTime";
+    public static final String USER_ID = "user_id" ;
+
+   static  {
+        dbTables.put("Tasks", 1);
+    }
+
+
 
 }

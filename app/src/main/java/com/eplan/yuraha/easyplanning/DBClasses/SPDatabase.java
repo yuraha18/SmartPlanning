@@ -28,7 +28,8 @@ public class SPDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE Tasks ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_TEXT TEXT, "
-                + "PRIORITY INTEGER);");
+                + "PRIORITY INTEGER, "
+                + "SID LONG);");
 
         /* Save id's all doneTasks*/
         db.execSQL("CREATE TABLE DoneTasks ("
@@ -125,6 +126,12 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER, "
                 + "DAY_ID INTEGER);");
+
+        /* In this table are information about whole rows not sync with server */
+        db.execSQL("CREATE TABLE SyncData("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "ROW_ID INTEGER, "
+                + "TABLE_ID INTEGER);");
 
 
         DBHelper.addToDateTable(db, TaskListFragment.getTodaysDay());//save day creating app

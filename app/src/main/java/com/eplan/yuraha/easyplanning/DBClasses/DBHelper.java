@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
 
+import com.eplan.yuraha.easyplanning.API.DBSynchronizer;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
 import com.eplan.yuraha.easyplanning.Constants;
 import com.eplan.yuraha.easyplanning.DayStatistic;
@@ -22,9 +23,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-/**
- * Created by Yura on 17.02.2017.
- */
 
 public class DBHelper {
 
@@ -32,7 +30,7 @@ public class DBHelper {
                                   ArrayList<String> chosenDays, String calledDay, boolean isRepeatEveryMonth, List<String> checkedGoals,
                                   String remindTime, Context context){
         try {
-            long taskID = addToTasksTable(db, text, priority);
+            long taskID = addToTasksTable(db, context, text, priority, 0);
 
             if (remindTime!=null)
             addToRemindingTable(db, taskID, remindTime);
@@ -60,7 +58,8 @@ public class DBHelper {
             if (remindTime != null){}
             ManagerNotifications.createNotifications(db, context, taskID+"");
 
-
+            int tableId = Constants.dbTables.get("Tasks");
+            DBSynchronizer.addToSyncTable(db, context, taskID, tableId);
         }
         catch (SQLiteException e)
         {return false;}
@@ -460,19 +459,22 @@ value.clear();
         return remindID;
     }
 
-    public static long addToTasksTable(SQLiteDatabase db, String text, int priority) throws SQLiteException
+    public static long addToTasksTable(SQLiteDatabase db, Context context, String text, int priority, long sid) throws SQLiteException
     {
         ContentValues value = new ContentValues();
         value.put("TASK_TEXT", text);
         value.put("PRIORITY", priority);
+        value.put("SID", sid);
         long taskID = db.insert("Tasks", null, value);
 
+        System.out.println(taskID);
         value.clear();
         if (taskID < 0)
             throw new SQLiteException("id=-1 in addToTasksTable");
 
         return taskID;
     }
+
 
     public static long addToDateTable(SQLiteDatabase db, String date) throws SQLiteException
     {
@@ -1523,6 +1525,7 @@ cursor.close();
 
         contentValues.clear();
     }
+
 
 
 }
