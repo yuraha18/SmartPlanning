@@ -32,13 +32,15 @@ public class Synchronizer {
             SPDatabase spDatabase = new SPDatabase(context);
             SQLiteDatabase db = spDatabase.getReadableDatabase();
 
-            ArrayList<SynchObject> synchObjects = DBSynchronizer.getAllSyncRows(db);
             ApiService api = getApi();
+           SynchApp.synchAppWithServer(db, api, context);
+            ArrayList<SynchObject> synchObjects = DBSynchronizer.getAllSyncRows(db);
+
             if (synchObjects.size()>0) {
-                SynchServer.synchServerWithApp(db, synchObjects, api);
+              SynchServer.synchServerWithApp(db, synchObjects, api);
             }
 
-            SynchApp.synchAppWithServer(db, api, context);
+
 
 
         }

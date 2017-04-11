@@ -5,12 +5,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.eplan.yuraha.easyplanning.API.DBSynchronizer;
 import com.eplan.yuraha.easyplanning.AddTaskFragment;
+import com.eplan.yuraha.easyplanning.Constants;
 import com.eplan.yuraha.easyplanning.TaskListFragment;
 
-/**
- * Created by Yura on 16.02.2017.
- */
 
 public class SPDatabase extends SQLiteOpenHelper {
 
@@ -28,17 +27,16 @@ public class SPDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE Tasks ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_TEXT TEXT, "
-                + "PRIORITY INTEGER, "
-                + "SID LONG);");
+                + "PRIORITY INTEGER);");
 
         /* Save id's all doneTasks*/
-        db.execSQL("CREATE TABLE DoneTasks ("
+        db.execSQL("CREATE TABLE DoneTask ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER, "
                 + "DAY_ID INTEGER);");
 
         /* Save id's all notDoneTasks*/
-        db.execSQL("CREATE TABLE InProgressTasks ("
+        db.execSQL("CREATE TABLE InProgressTask ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER);");
 
@@ -61,20 +59,20 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "TIME TEXT);");
 
          /* Table with goals info*/
-        db.execSQL("CREATE TABLE Goals("
+        db.execSQL("CREATE TABLE Goal("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "GOAL_TEXT TEXT, "
                 + "NOTICE TEXT, "
                 + "DEADLINE INTEGER);");
 
            /* Save id's all doneGoals*/
-        db.execSQL("CREATE TABLE DoneGoals ("
+        db.execSQL("CREATE TABLE DoneGoal ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "GOAL_ID INTEGER, "
                 + "DAY_ID INTEGER);");
 
         /* Save id's all goals in progress*/
-        db.execSQL("CREATE TABLE InProgressGoals ("
+        db.execSQL("CREATE TABLE InProgressGoal ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "GOAL_ID INTEGER);");
 
@@ -85,13 +83,13 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "GOAL_ID INTEGER);");
 
          /* All days have their own id used in other tables */
-        db.execSQL("CREATE TABLE Days("
+        db.execSQL("CREATE TABLE Day("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "DAY TEXT);");
 
 
         /* If user delete repeated task from some day, it check in here */
-        db.execSQL("CREATE TABLE DeletedTasks("
+        db.execSQL("CREATE TABLE DeletedTask("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER, "
                 + "DAY_ID INTEGER);");
@@ -122,7 +120,7 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "COUNT_IN_PROGRESS INTEGER);");
 
          /* Table with Notification ids. This id is taskId (which is unique)*/
-        db.execSQL("CREATE TABLE Notifications("
+        db.execSQL("CREATE TABLE Notification("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "TASK_ID INTEGER, "
                 + "DAY_ID INTEGER);");
@@ -132,6 +130,15 @@ public class SPDatabase extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "ROW_ID INTEGER, "
                 + "TABLE_ID INTEGER);");
+
+         /*  */
+        db.execSQL("CREATE TABLE Adapter("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "TABLE_ID INTEGER,"
+                + "LOCAL_ID INTEGER, "
+                + "SID INTEGER);");
+
+
 
 
         DBHelper.addToDateTable(db, TaskListFragment.getTodaysDay());//save day creating app
@@ -165,7 +172,9 @@ public class SPDatabase extends SQLiteOpenHelper {
     private void addDayToDB(SQLiteDatabase db, String day) {
         ContentValues value = new ContentValues();
         value.put("DAY", day);
-        db.insert("Days", null, value);
+       long id = db.insert("Day", null, value);
+        DBSynchronizer.addToSyncTable(db, id, Constants.DAYS_TABLE_ID);
+
     }
 
 

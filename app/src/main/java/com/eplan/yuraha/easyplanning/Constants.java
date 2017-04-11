@@ -32,16 +32,48 @@ public final class Constants {
 
     public static final String LAST_SYNCH_TIME = "lastSynchTime";
 
-    public static final HashMap<String, Integer> dbTables = new HashMap<>();
+    public static  HashMap<String, Integer> dbTables ;
 
     public static final String PROPERTIES_PATH = ".properties";
     public static final String LAST_UPDATE_TIME = "lastUpdateTime";
     public static final String USER_ID = "user_id" ;
 
-   static  {
-        dbTables.put("Tasks", 1);
+    public static final String TASK_TABLE = "Tasks";
+    public static final String DONE_TASKS_TABLE = "DoneTask";
+    public static final String IN_PROGRESS_TASKS_TABLE = "InProgressTask";
+    public static final String REPEATING_TABLE = "Repeating";
+    public static final String MONTH_REPEATING_TABLE = "MonthRepeating";
+    public static final String REMINDING_TABLE = "Reminding";
+    public static final String GOALS_TABLE = "DTOGoal";
+    public static final String DONE_GOALS_TABLE = "DoneGoal";
+    public static final String IN_PROGRESS_GOALS_TABLE = "InProgressGoal";
+    public static final String TASK_TO_GOAL_TABLE = "TaskToGoal";
+    public static final String DAYS_TABLE = "Day";
+    public static final String DELETED_TASKS_TABLE = "DeletedTask";
+    public static final String TASK_LIFECYCLE_TABLE = "TaskLifecycle";
+    public static final String NOTIFICATIONS_TABLE = "Notification";
+
+    static  {
+        dbTables = new HashMap<>();
+        dbTables.put(TASK_TABLE, 1);
+        dbTables.put(REMINDING_TABLE, 2);
+        dbTables.put(DAYS_TABLE, 3);
+        dbTables.put(GOALS_TABLE, 4);
+        dbTables.put(DONE_TASKS_TABLE, 5);
+        dbTables.put(IN_PROGRESS_TASKS_TABLE, 6);
+        dbTables.put(REPEATING_TABLE, 7);
+        dbTables.put(MONTH_REPEATING_TABLE, 8);
+        dbTables.put(IN_PROGRESS_GOALS_TABLE, 9);
+        dbTables.put(TASK_TO_GOAL_TABLE, 10);
+        dbTables.put(DONE_GOALS_TABLE, 11);
+        dbTables.put(DELETED_TASKS_TABLE, 12);
+        dbTables.put(TASK_LIFECYCLE_TABLE, 13);
+        dbTables.put(NOTIFICATIONS_TABLE, 14);
     }
 
+    public static final int TASK_TABLE_ID = dbTables.get(Constants.TASK_TABLE);
+    public static final int DAYS_TABLE_ID = dbTables.get(Constants.DAYS_TABLE);
+    public static final int GOALS_TABLE_ID =  dbTables.get(Constants.GOALS_TABLE);
 
 
 }

@@ -23,13 +23,13 @@ import java.util.Date;
  * Created by yuraha18 on 3/12/2017.
  */
 
-/* This class creates all Notifications and set them in AlarmManager for Repeating
+/* This class creates all Notification and set them in AlarmManager for Repeating
 * in the right time AlarmManager calls NotificationPublisher (extends BroadcastReceiver)
 * and it creates Notification (using getNotification method from this class)
-* taskId equals NotificationId and _id from from Table Notifications is PendingId
+* taskId equals NotificationId and _id from from Table Notification is PendingId
 * getNotification method creates the same Notification for single taskId
 * although PendingIds are unique because they creates unique alarms for every day from RepeatingTable
-* There are methods for Notifications in SettingsFragment and MainActivity
+* There are methods for Notification in SettingsFragment and MainActivity
 * in settingsFragment they receive preference states (isSetNotifications, Ringtone, Vibration and other)
  * There is method for firstly (only when app creates ) adding Notification for
  * reminding about every day planning in MainActivity */
@@ -252,6 +252,7 @@ public class ManagerNotifications {
 
         return true;
     }
+
 
     /* its every day repeating notif for reminding about da planning
     * calls ones when app creates and many times when preference (RemindMe and its checkbox) changing*/

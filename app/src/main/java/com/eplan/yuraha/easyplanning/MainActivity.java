@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.PopupMenu;
@@ -14,11 +15,13 @@ import android.view.MenuItem;
 
 import com.eplan.yuraha.easyplanning.API.ApiService;
 import com.eplan.yuraha.easyplanning.API.DBSynchronizer;
+import com.eplan.yuraha.easyplanning.API.SynchApp;
 import com.eplan.yuraha.easyplanning.API.SynchObject;
 import com.eplan.yuraha.easyplanning.API.Synchronizer;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
 import com.eplan.yuraha.easyplanning.dto.DTOTask;
+import com.eplan.yuraha.easyplanning.dto.Day;
 import com.eplan.yuraha.easyplanning.dto.Time;
 
 import java.util.ArrayList;
@@ -46,19 +49,23 @@ public class MainActivity extends BaseActivity implements
 
         super.onCreate(savedInstanceState);
 
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
         LayoutInflater inflater = (LayoutInflater) this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         final View contentView = inflater.inflate(R.layout.activity_main, null, false);
         drawer.addView(contentView, 0);
 
+
         setUpEveryDayNotification(getApplicationContext());
         String searchQuery = getIntent().getStringExtra("searchQuery");
         
         System.out.println("connection: " + InternetListener.hasActiveInternetConnection(this));
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-
-        allTasks();
+        
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -67,7 +74,7 @@ public class MainActivity extends BaseActivity implements
         });
         thread.setDaemon(true);
         thread.start();
-
+       //   test();
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         TaskListFragment taskFragment = new TaskListFragment(this, fab, searchQuery);//create new fragment
@@ -79,11 +86,24 @@ public class MainActivity extends BaseActivity implements
 
     }
 
-    private void allTasks() {
-        ArrayList<DTOTask> list = DBSynchronizer.allTasks(this);
+    private void test() {
+        Day day = new Day(0, "Tuesday");
+      Call<Day> call=  Synchronizer.getApi().saveDays(day, 0);
 
-        for (DTOTask task : list)
-            System.out.println(task);
+        call.enqueue(new Callback<Day>() {
+            @Override
+            public void onResponse(Call<Day> call, Response<Day> response) {
+                System.out.println("on response");
+                System.out.println(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<Day> call, Throwable t) {
+
+            }
+        });
+
+
     }
 
 

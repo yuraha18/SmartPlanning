@@ -23,7 +23,7 @@
         <item>Відкрити календар</item>
     </string-array>
 
-    <!-- Days  -->
+    <!-- Day  -->
     <string name="monday">Понеділок</string>
     <string name="tuesday">Вівторок</string>
     <string name="wednesday">Середа</string>
