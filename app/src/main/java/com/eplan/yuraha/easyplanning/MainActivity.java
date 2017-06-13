@@ -2,6 +2,7 @@ package com.eplan.yuraha.easyplanning;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import com.eplan.yuraha.easyplanning.API.ApiService;
 import com.eplan.yuraha.easyplanning.API.DBSynchronizer;
 import com.eplan.yuraha.easyplanning.API.SynchApp;
 import com.eplan.yuraha.easyplanning.API.SynchObject;
+import com.eplan.yuraha.easyplanning.API.SynchServer;
 import com.eplan.yuraha.easyplanning.API.Synchronizer;
 import com.eplan.yuraha.easyplanning.DBClasses.DBHelper;
 import com.eplan.yuraha.easyplanning.DBClasses.SPDatabase;
@@ -74,7 +76,7 @@ public class MainActivity extends BaseActivity implements
         });
         thread.setDaemon(true);
         thread.start();
-       //   test();
+       //  test();
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         TaskListFragment taskFragment = new TaskListFragment(this, fab, searchQuery);//create new fragment
@@ -87,22 +89,13 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void test() {
-        Day day = new Day(0, "Tuesday");
-      Call<Day> call=  Synchronizer.getApi().saveDays(day, 0);
-
-        call.enqueue(new Callback<Day>() {
-            @Override
-            public void onResponse(Call<Day> call, Response<Day> response) {
-                System.out.println("on response");
-                System.out.println(response.body());
-            }
-
-            @Override
-            public void onFailure(Call<Day> call, Throwable t) {
-
-            }
-        });
-
+        SPDatabase sp = new SPDatabase(getApplicationContext());
+        SQLiteDatabase db = sp.getReadableDatabase();
+      for (int i =0; i <5000; i++)
+      {
+          System.out.println("text " +i );
+          DBHelper.addToTasksTable(db, "text"+i, 2, false);
+      }
 
     }
 
@@ -121,7 +114,7 @@ public class MainActivity extends BaseActivity implements
  /* set up every day repeating for reminding about planning*/
         if (countOfNotifications==0) {
             ManagerNotifications.createNotifications(readableDB, context, "0");
-            DBHelper.addNotification(readableDB, "0", "1");
+            DBHelper.addNotification(readableDB, "0", "1", false);
         }
 
         readableDB.close();

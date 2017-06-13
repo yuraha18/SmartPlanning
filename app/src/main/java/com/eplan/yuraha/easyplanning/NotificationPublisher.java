@@ -64,7 +64,7 @@ public class NotificationPublisher extends BroadcastReceiver {
             SPDatabase spDatabase = new SPDatabase(context);
             SQLiteDatabase readableDB = spDatabase.getReadableDatabase();
             String todaysDay = TaskListFragment.getTodaysDay();
-            long todaysDayId = DBHelper.addToDateTable(readableDB, todaysDay);
+            long todaysDayId = DBHelper.addToDateTable(readableDB, todaysDay, false);
 
             boolean result = DBHelper.isInDeletedTable(readableDB, taskId, todaysDayId);
             spDatabase.close();

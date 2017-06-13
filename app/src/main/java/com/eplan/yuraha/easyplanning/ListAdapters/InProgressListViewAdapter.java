@@ -176,7 +176,7 @@ public class InProgressListViewAdapter extends BaseAdapter {
 
     private void deleteGoal(int position) {
         String goalId = goalsList.get(position).getId();
-        boolean result = DBHelper.deleteGoal(readableDb, goalId);
+        boolean result = DBHelper.deleteGoal(readableDb, goalId, false);
 
         if (result) {
             goalsList.remove(position);
@@ -205,7 +205,7 @@ public class InProgressListViewAdapter extends BaseAdapter {
         try {
              String goalID = goalsList.get(position).getId();
             String todaysDate = getCurrentDay();
-            DBHelper.moveGoalToDone(readableDb, goalID, todaysDate);
+            DBHelper.moveGoalToDone(readableDb, goalID, todaysDate, false);
             goalsList.remove(position);
             dataHasBeenChanged();
             Goal addedGoal = DBHelper.getGoalFromId(readableDb, goalID);

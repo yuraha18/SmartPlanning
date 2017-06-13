@@ -3,7 +3,7 @@ package com.eplan.yuraha.easyplanning;
 
 public final class URL
 {
-    public static final String BASE_URL = "http://192.168.0.100:8080/sp/";
+    public static final String BASE_URL = "http://192.168.0.101:8080/sp/";
     public static final String GET_TIME = "current_time";
     public static final String GET_SYNCH_DATA = "synch_data";
 
@@ -21,4 +21,5 @@ public final class URL
     public static final String DELETED_TASKS_URL = "deletedtasks";
     public static final String TASK_LIFECYCLE_URL = "tasklifecycle";
     public static final String NOTIFICATIONS_URL = "notifications";
+    public static final String SAVE_LIST_URL = "savelist";
 }

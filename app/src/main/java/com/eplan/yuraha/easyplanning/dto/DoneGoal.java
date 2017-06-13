@@ -9,6 +9,7 @@ public class DoneGoal {
     private long sid;
     private long goalId;
     private long dayId;
+    private long localId;
 
     public DoneGoal() {
     }
@@ -21,6 +22,24 @@ public class DoneGoal {
         this.sid = sid;
         this.goalId = goalId;
         this.dayId = dayId;
+    }
+
+    public long getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(long localId) {
+        this.localId = localId;
+    }
+
+    @Override
+    public String toString() {
+        return "DoneGoal{" +
+                "sid=" + sid +
+                ", goalId=" + goalId +
+                ", dayId=" + dayId +
+                ", localId=" + localId +
+                '}';
     }
 
     public void setSid(long sid) {
@@ -41,5 +60,28 @@ public class DoneGoal {
 
     public void setDayId(long dayId) {
         this.dayId = dayId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DoneGoal doneGoal = (DoneGoal) o;
+
+        if (sid != doneGoal.sid) return false;
+        if (goalId != doneGoal.goalId) return false;
+        if (dayId != doneGoal.dayId) return false;
+        return localId == doneGoal.localId;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (sid ^ (sid >>> 32));
+        result = 31 * result + (int) (goalId ^ (goalId >>> 32));
+        result = 31 * result + (int) (dayId ^ (dayId >>> 32));
+        result = 31 * result + (int) (localId ^ (localId >>> 32));
+        return result;
     }
 }

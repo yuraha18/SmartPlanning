@@ -156,7 +156,7 @@ public class AddGoalFragment extends Fragment {
             return;
         }
 
-       boolean result = DBHelper.updateGoal(writableDb, goalName.getText().toString(), goalNote.getText().toString(), goalId);
+       boolean result = DBHelper.updateGoal(writableDb, goalName.getText().toString(), goalNote.getText().toString(), goalId, false);
 
         if (result) {
             Toast.makeText(getActivity(), getResources().getString(R.string.goalEditSuccessfully), Toast.LENGTH_LONG).show();
@@ -193,7 +193,7 @@ public class AddGoalFragment extends Fragment {
             return;
         }
 
-        final long goalId = DBHelper.addGoalToDB(writableDb, goalName.getText().toString(), goalNote.getText().toString(), dayFromCalendar);
+        final long goalId = DBHelper.addGoalToDB(writableDb, goalName.getText().toString(), goalNote.getText().toString(), dayFromCalendar, false);
 
         if (goalId > 0) {
             Toast.makeText(getActivity(), getResources().getString(R.string.goalAddSuccessfully), Toast.LENGTH_LONG).show();

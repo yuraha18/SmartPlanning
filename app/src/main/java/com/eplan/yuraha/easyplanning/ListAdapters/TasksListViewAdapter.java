@@ -163,7 +163,7 @@ public void setNewData(ArrayList<Task> list)
                 }
                 else
                 {
-                    DBHelper.addToDoneTasks(readableDb, taskId, parentFragment.getDayFromSpinner());
+                    DBHelper.addToDoneTasks(readableDb, taskId, parentFragment.getDayFromSpinner(), false);
                     isDone.setColorFilter(ContextCompat.getColor(context,R.color.lowPriority));
                     Toast.makeText(activity, activity.getResources().getString(R.string.goodJob), Toast.LENGTH_SHORT).show();
                 }
@@ -235,7 +235,7 @@ public void setNewData(ArrayList<Task> list)
         long taskId = tasksList.get(position).getId();
 
         // 3rd parameter is current day (when user are deleting task), not dayFromSpinner
-        boolean result = DBHelper.deleteTaskFromAllDays(readableDb, taskId+"", parentFragment.getTodaysDay(), parentFragment.getContext());
+        boolean result = DBHelper.deleteTaskFromAllDays(readableDb, taskId+"", parentFragment.getTodaysDay(), parentFragment.getContext(), false);
 
         if (!result)
             Toast.makeText(context, context.getResources().getString(R.string.cantDeleteException), Toast.LENGTH_LONG).show();

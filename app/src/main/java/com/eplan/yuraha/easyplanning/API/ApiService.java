@@ -10,6 +10,7 @@ import com.eplan.yuraha.easyplanning.dto.DoneGoal;
 import com.eplan.yuraha.easyplanning.dto.DoneTask;
 import com.eplan.yuraha.easyplanning.dto.InProgressGoal;
 import com.eplan.yuraha.easyplanning.dto.InProgressTask;
+import com.eplan.yuraha.easyplanning.dto.MainDTO;
 import com.eplan.yuraha.easyplanning.dto.MonthRepeating;
 import com.eplan.yuraha.easyplanning.dto.Notification;
 import com.eplan.yuraha.easyplanning.dto.Reminding;
@@ -34,7 +35,7 @@ public interface ApiService {
     Call<Time> getCurrentTime();
 
    @GET(URL.GET_SYNCH_DATA)
-   Call<List<SynchObject>> getSynchData(@Query("userId") long userId, @Query("time") long time);
+   Call<MainDTO> getSynchData(@Query("userId") long userId, @Query("time") long time);
 
     /* Api for Adding to TASK_TABLE */
 
@@ -165,6 +166,12 @@ public interface ApiService {
 
     @GET(URL.TASK_TO_GOAL_URL +"/{id}")
     Call<TaskToGoal> getTaskToGoal(@Path("id") long id);
+
+
+ //////////////////////////////////////////////////////////////////
+ @POST(URL.SAVE_LIST_URL+"/{id}")
+ Call<MainDTO> saveList(@Body MainDTO dto, @Path("id") long userId);
+
 
 
 

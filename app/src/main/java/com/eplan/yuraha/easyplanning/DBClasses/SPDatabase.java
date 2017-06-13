@@ -141,7 +141,7 @@ public class SPDatabase extends SQLiteOpenHelper {
 
 
 
-        DBHelper.addToDateTable(db, TaskListFragment.getTodaysDay());//save day creating app
+        DBHelper.addToDateTable(db, TaskListFragment.getTodaysDay(), false);//save day creating app
         addDayToDB(db, "Sunday");
         addDayToDB(db, "Monday");
         addDayToDB(db, "Tuesday");

@@ -40,10 +40,10 @@ public class DBHelper {
                                   ArrayList<String> chosenDays, String calledDay, boolean isRepeatEveryMonth, List<String> checkedGoals,
                                   String remindTime, Context context){
         try {
-            long taskID = addToTasksTable(db,  text, priority);
+            long taskID = addToTasksTable(db,  text, priority, false);
 
             if (remindTime!=null)
-            addToRemindingTable(db, taskID, remindTime);
+            addToRemindingTable(db, taskID, remindTime, false);
 
             // if user chosen repeat every week, add info about repeating day in MonthRepeating table
             if (isRepeatEveryMonth) {
@@ -52,18 +52,18 @@ public class DBHelper {
 // in other case, set repeating days
             else {
                 for (String day : chosenDays) {
-                    long dayID = addToDateTable(db, day);
-                    addToRepeatingTable(db, taskID, dayID);
+                    long dayID = addToDateTable(db, day, false);
+                    addToRepeatingTable(db, taskID, dayID, false);
                 }
             }
 
-            addToInProgressTasks(db, taskID);
+            addToInProgressTasks(db, taskID, false);
 
             if (checkedGoals!= null && checkedGoals.size() > 0)
                 addToTaskToGoalTable(db, taskID, checkedGoals);
 
             //create new row in TaskLifecycleTable where first day from list will be FROM_DAY
-            addToTaskLifecycleTable(db, taskID, calledDay);
+            addToTaskLifecycleTable(db, taskID, calledDay, false);
 
             if (remindTime != null){}
             ManagerNotifications.createNotifications(db, context, taskID+"");
@@ -79,7 +79,7 @@ public class DBHelper {
         return true;
     }
 
-    public static long addNotification(SQLiteDatabase db, String taskID, String day) throws SQLiteException {
+    public static long addNotification(SQLiteDatabase db, String taskID, String day, boolean isSynchronization) throws SQLiteException {
         long dayId = getDayFromString(db, day);
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
@@ -87,7 +87,9 @@ public class DBHelper {
        long id = db.insert("Notification", null, value);
         value.clear();
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.NOTIFICATIONS_TABLE));
+
         return id;
     }
 
@@ -157,17 +159,19 @@ public class DBHelper {
     }
     public static void addToMonthRepeatingTable(SQLiteDatabase db, String taskID, String calledDay) {
         int dayOfMonth =  AddTaskFragment.getDayOfMonth(calledDay, Constants.DATEFORMAT);
-        addMonthRepeating(db, taskID, dayOfMonth);
+        addMonthRepeating(db, taskID, dayOfMonth, false);
     }
 
-    public static long addMonthRepeating(SQLiteDatabase db, String taskID, int dayOfMonth) {
+    public static long addMonthRepeating(SQLiteDatabase db, String taskID, int dayOfMonth, boolean isSynchronization) {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
         value.put("DAY_OF_MONTH", dayOfMonth);
       long id=  db.insert("MonthRepeating", null, value);
         value.clear();
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.MONTH_REPEATING_TABLE));
+
         return id;
     }
 
@@ -177,9 +181,9 @@ public class DBHelper {
       *   the first day from list is earliest (its day in which user clicked "+" in MainActivity)
       *   although user can choose date from calendar earlier then first
       *   that's why i compere first and last (day from calendar adding always last) days in getEarlierDay in AddTaskFragment where is dateFormat*/
-    public static long addToTaskLifecycleTable(SQLiteDatabase db, long taskID, String day) {
+    public static long addToTaskLifecycleTable(SQLiteDatabase db, long taskID, String day, boolean isSynchronization) {
 
-        long dayID = addToDateTable(db, day);
+        long dayID = addToDateTable(db, day, isSynchronization);
 
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
@@ -188,6 +192,7 @@ public class DBHelper {
         long id = db.insert("TaskLifecycle", null, value);
         value.clear();
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.TASK_LIFECYCLE_TABLE));
 
         return id;
@@ -218,7 +223,7 @@ public class DBHelper {
 
             else
             {
-                deleteTaskFromAllDays(db, taskID, todaysDay, context);// set DayTo in taskLifecycle
+                deleteTaskFromAllDays(db, taskID, todaysDay, context, false);// set DayTo in taskLifecycle
                 addTask(db, text, priority, chosenDays, todaysDay, isRepeatEveryMonth, checkedGoals, remindTime, context);
             }
 
@@ -237,8 +242,8 @@ public class DBHelper {
     }
 
     public static void updateTask(SQLiteDatabase db, String calledDay, String taskID, String text, int priority, ArrayList<String> chosenDays, boolean isRepeatEveryMonth, List<String> checkedGoals, String remindTime, Context context) {
-        updateTaskTable(db, taskID, text, priority);
-        updateRemindTable(db, taskID, remindTime);
+        updateTaskTable(db, taskID, text, priority, false);
+        updateRemindTable(db, taskID, remindTime, false);
         updateRepeatingDays(db, isRepeatEveryMonth, taskID, calledDay, chosenDays);
         updateNotifications(db, context, taskID);
         updateTaskToGoalTable(db, taskID, checkedGoals);
@@ -280,8 +285,8 @@ public class DBHelper {
         db.delete("Repeating", "TASK_ID" + " = ?", new String[] { taskID });
 
         for (String day : chosenDays) {
-            long dayID = addToDateTable(db, day);
-            addToRepeatingTable(db, Long.parseLong(taskID), dayID );
+            long dayID = addToDateTable(db, day, false);
+            addToRepeatingTable(db, Long.parseLong(taskID), dayID, false );
         }
 
     }
@@ -370,7 +375,7 @@ public class DBHelper {
 
     public static boolean isInDoneTasksTable(SQLiteDatabase db, long taskId, String day)
     {
-        long dayId = addToDateTable(db, day);
+        long dayId = addToDateTable(db, day, false);
         Cursor cursor = db.query ("DoneTask",
                 new String[] {"_id"},
                 "TASK_ID = ? AND DAY_ID = ?",
@@ -387,7 +392,7 @@ cursor.close();
 
     public static void deleteFromDoneTasks(SQLiteDatabase db, long taskId, String day)
     {
-        long dayId = addToDateTable(db, day);
+        long dayId = addToDateTable(db, day, false);
         long doneTaskId = getDoneTaskId(db, taskId+"", dayId+"");
         db.delete("DoneTask", "TASK_ID" + " = ?" + " AND DAY_ID" + " = ?", new String[] { taskId+"", dayId+"" });
 
@@ -413,24 +418,25 @@ cursor.close();
             throw new SQLiteException("goalId not found");
     }
 
-    public static long addToDoneTasks(SQLiteDatabase db, long taskId, String day)
+    public static long addToDoneTasks(SQLiteDatabase db, long taskId, String day, boolean isSynchronization)
     {
         if (isInDoneTasksTable(db, taskId,day ))
             return 0;
 
-        long dayId = addToDateTable(db, day);
+        long dayId = addToDateTable(db, day, isSynchronization);
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskId);
         value.put("DAY_ID", dayId);
        long id = db.insert("DoneTask", null, value);
         value.clear();
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.DONE_TASKS_TABLE));
         return id;
 
     }
 
-    public static void updateTaskTable(SQLiteDatabase db, String taskID, String text, int priority) {
+    public static void updateTaskTable(SQLiteDatabase db, String taskID, String text, int priority, boolean isSynchronization) {
         ContentValues value = new ContentValues();
         value.put("TASK_TEXT", text);
         value.put("PRIORITY", priority);
@@ -440,8 +446,9 @@ cursor.close();
         value.clear();
 
         if (updCount<1)
-            throw new SQLiteException("cant update RemindTable");
+            throw new SQLiteException("cant updateTaskTable");
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, Long.parseLong(taskID), Constants.dbTables.get(Constants.TASK_TABLE));
     }
 
@@ -486,10 +493,10 @@ cursor.close();
         return idList;
     }
 
-    public static void updateRemindTable(SQLiteDatabase db, String taskID, String remindTime) {
+    public static void updateRemindTable(SQLiteDatabase db, String taskID, String remindTime, boolean isSynchronization) {
         ContentValues value = new ContentValues();
         value.put("TIME", remindTime);
-        int updCount = db.update("Reminding", value, "TASK_ID = ?",
+        db.update("Reminding", value, "TASK_ID = ?",
                 new String[] { taskID });
 
 value.clear();
@@ -497,6 +504,8 @@ value.clear();
          //   throw new SQLiteException("cant update RemindTable");
 
         long remindId = getRemindId(db, taskID);
+
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, remindId, Constants.dbTables.get(Constants.REMINDING_TABLE));
     }
 
@@ -525,13 +534,14 @@ value.clear();
         for (String goal : checkedGoals)
         {
             long goalID = getGoalIdFromGoalText(db, goal);
-           insertTaskToGoal(db, taskID, goalID);
+           insertTaskToGoal(db, taskID, goalID, false);
         }
 
 
     }
 
-    public static long insertTaskToGoal(SQLiteDatabase db, long taskId, long goalId)
+    public static long insertTaskToGoal(SQLiteDatabase db, long taskId, long goalId, boolean isSynchronization
+    )
     {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskId);
@@ -539,6 +549,7 @@ value.clear();
         long id = db.insert("TaskToGoal", null, value);
         value.clear();
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.TASK_TO_GOAL_TABLE));
 
         return id;
@@ -563,7 +574,7 @@ value.clear();
         return -1;
     }
 
-    public static long addToInProgressTasks(SQLiteDatabase db, long taskID) throws SQLiteException {
+    public static long addToInProgressTasks(SQLiteDatabase db, long taskID, boolean isSynchronization) throws SQLiteException {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
         long id = db.insert("InProgressTask", null, value);
@@ -573,12 +584,14 @@ value.clear();
         if (id < 0)
             throw new SQLiteException("id=-1 in addToInProgressTasks");
 
-        DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.IN_PROGRESS_TASKS_TABLE));
+        if (!isSynchronization)
+            DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.IN_PROGRESS_TASKS_TABLE));
+
         return id;
 
     }
 
-    public static long addToRepeatingTable(SQLiteDatabase db, long taskID, long dayID) throws SQLiteException
+    public static long addToRepeatingTable(SQLiteDatabase db, long taskID, long dayID, boolean isSynchronization) throws SQLiteException
     {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
@@ -589,11 +602,13 @@ value.clear();
         if (repeatID < 0)
             throw new SQLiteException("id=-1 in addToRepeatingTable");
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, repeatID, Constants.dbTables.get(Constants.REPEATING_TABLE));
+
         return repeatID;
     }
 
-    public static long addToRemindingTable(SQLiteDatabase db, long taskID, String time) throws SQLiteException
+    public static long addToRemindingTable(SQLiteDatabase db, long taskID, String time, boolean isSynchronization) throws SQLiteException
     {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskID);
@@ -604,30 +619,31 @@ value.clear();
         if (remindID < 0)
             throw new SQLiteException("id=-1 in addToRemindingTable");
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, remindID, Constants.dbTables.get(Constants.REMINDING_TABLE));
 
         return remindID;
     }
 
-    public static long addToTasksTable(SQLiteDatabase db, String text, int priority) throws SQLiteException
+    public static long addToTasksTable(SQLiteDatabase db, String text, int priority, boolean isSynchronization) throws SQLiteException
     {
         ContentValues value = new ContentValues();
         value.put("TASK_TEXT", text);
         value.put("PRIORITY", priority);
         long taskID = db.insert("Tasks", null, value);
 
-        System.out.println(taskID);
         value.clear();
         if (taskID < 0)
             throw new SQLiteException("id=-1 in addToTasksTable");
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, taskID, Constants.dbTables.get(Constants.TASK_TABLE));
 
         return taskID;
     }
 
 
-    public static long addToDateTable(SQLiteDatabase db, String date) throws SQLiteException
+    public static long addToDateTable(SQLiteDatabase db, String date, boolean isSynchronization) throws SQLiteException
     {
         long dateID = getDayFromString(db, date);//this method select dayId from db, if exist
         if (dateID>0)
@@ -642,6 +658,7 @@ value.clear();
         if (dateID < 0)
             throw new SQLiteException("id=-1 in addToDateTable");
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, dateID, Constants.dbTables.get(Constants.DAYS_TABLE));
         return dateID;
     }
@@ -739,7 +756,7 @@ value.clear();
             return result;
         }
 
-        long dayId = addToDateTable(db, day);
+        long dayId = addToDateTable(db, day, false);
         int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
         ArrayList<Long> taskIds = new ArrayList<>();
@@ -761,10 +778,10 @@ value.clear();
     /* this method gets all tasks for day*/
     public static ArrayList<String> getTaskNamesFromRepeatingTable(SQLiteDatabase db, String day) {
         ArrayList<String> namesList = new ArrayList<>();
-        long dayId = addToDateTable(db, day);
+        long dayId = addToDateTable(db, day, false);
         int dayOfWeek = AddTaskFragment.getDayOfWeek(day, Constants.DATEFORMAT);// get day of week for called day
         String weekDay = AddTaskFragment.weekDays.get(dayOfWeek);// gets name for this day of week (4 - Thursday)
-        long dayOfWeekId = addToDateTable(db, weekDay);// gets from db dayId for this day (for example, Thursday)
+        long dayOfWeekId = addToDateTable(db, weekDay, false);// gets from db dayId for this day (for example, Thursday)
         int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
         // gets all tasks for this day, This method i also use in getAllTasksFor day method
@@ -820,11 +837,11 @@ value.clear();
         return result;
     }
 
-    public static long addGoalToDB(SQLiteDatabase db, String text, String note, String deadline)
+    public static long addGoalToDB(SQLiteDatabase db, String text, String note, String deadline, boolean isSynchronization)
     {
         long goalId =0;
         try {
-            long dayId = addToDateTable(db, deadline);
+            long dayId = addToDateTable(db, deadline, isSynchronization);
             ContentValues value = new ContentValues();
             value.put("GOAL_TEXT", text);
             value.put("NOTICE", note);
@@ -836,20 +853,21 @@ value.clear();
             if (goalId <= 0)
                 throw new SQLiteException("id=-1 in addGoalToDB");
 
-            addToInProgressGoals(db, goalId);
+            addToInProgressGoals(db, goalId, false);
         }
         catch (SQLiteException e)
         {return -1;}
         catch (Exception e)
         {return -1;}
 
-
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, goalId, Constants.dbTables.get(Constants.GOALS_TABLE));
+
         return goalId;
     }
 
 
-    public static long addToInProgressGoals(SQLiteDatabase db, long goalId) throws SQLiteException{
+    public static long addToInProgressGoals(SQLiteDatabase db, long goalId, boolean isSynchronization) throws SQLiteException{
         ContentValues value = new ContentValues();
         value.put("GOAL_ID", goalId);
         long id = db.insert("InProgressGoal", null, value);
@@ -857,25 +875,24 @@ value.clear();
         if (id < 0)
             throw new SQLiteException("id=-1 in addToInProgressGoals");
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.IN_PROGRESS_GOALS_TABLE));
+
         return id;
     }
 
     public static String getDayFromId(SQLiteDatabase db, String dayId) throws SQLiteException
     {
-
         Cursor cursor = db.query ("Day",
                 new String[] {"DAY"},
                 "_id = ?",
                 new String[] {dayId},
                 null, null,null);
-
         if (cursor.moveToFirst()) {
             String id = cursor.getString(0);
             cursor.close();
             return id;
         }
-
 
         throw new SQLiteException();
     }
@@ -907,10 +924,10 @@ value.clear();
     }
 
 
-    public static long moveGoalToDone(SQLiteDatabase db,  String goalId, String todaysDate) throws SQLiteException
+    public static long moveGoalToDone(SQLiteDatabase db,  String goalId, String todaysDate, boolean isSynchronization) throws SQLiteException
     {
         long id =0;
-        long todaysDayId = addToDateTable(db, todaysDate);
+        long todaysDayId = addToDateTable(db, todaysDate, isSynchronization);
         ContentValues value = new ContentValues();
         value.put("GOAL_ID", goalId);
         value.put("DAY_ID", todaysDayId);
@@ -922,8 +939,10 @@ value.clear();
             db.delete("InProgressGoal", "GOAL_ID" + " = ?", new String[] { goalId });
             value.clear();
 
+            if (!isSynchronization){
             DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.DONE_GOALS_TABLE));
             DBSynchronizer.addToSyncTable(db, inProgressGoalId, Constants.dbTables.get(Constants.IN_PROGRESS_GOALS_TABLE));
+            }
             db.setTransactionSuccessful();
         }
         catch (Exception e){}
@@ -1016,7 +1035,7 @@ cursor.close();
     /* Delete goal mean that it's dayTo in Lifecycle is filed
     * its using for saving data for history
     * goal deletes from DB only in one case: if it attached to any tasks*/
-    public static boolean deleteGoal(SQLiteDatabase db, String goalId)
+    public static boolean deleteGoal(SQLiteDatabase db, String goalId, boolean isSynchronization)
     {
         try {
 
@@ -1025,12 +1044,16 @@ cursor.close();
             if (isGoalAttachedToTasks(db, goalId)) {
                 long inProgressGoalId = getInProgressGoalId(db, goalId);
                 db.delete("InProgressGoal", "GOAL_ID" + " = ?", new String[] { goalId});
+
+                if (!isSynchronization)
                 DBSynchronizer.addToSyncTable(db, inProgressGoalId, Constants.dbTables.get(Constants.IN_PROGRESS_GOALS_TABLE));
             }
 
             // if there are any tasks attached, delete it
             else {
                 db.delete("Goal", "_id=? ", new String[]{goalId});
+
+                if (!isSynchronization)
                 DBSynchronizer.addToSyncTable(db, Long.parseLong(goalId), Constants.dbTables.get(Constants.GOALS_TABLE));
             }
 
@@ -1100,7 +1123,7 @@ cursor.close();
         return result;
     }
 
-    public static boolean updateGoal(SQLiteDatabase db, String text, String note, String goalId)
+    public static boolean updateGoal(SQLiteDatabase db, String text, String note, String goalId, boolean isSynchronization)
     {
         try {
             ContentValues value = new ContentValues();
@@ -1118,6 +1141,8 @@ cursor.close();
         catch (Exception e)
         {return false;}
 
+
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, Long.parseLong(goalId), Constants.dbTables.get(Constants.GOALS_TABLE));
 
         return true;
@@ -1169,8 +1194,8 @@ cursor.close();
 
             ArrayList<Task> doneTasks = new ArrayList<>();
 
-            long dayID = addToDateTable(db, day);
-            long dayOfWeekId = addToDateTable(db, dayOfWeek);
+            long dayID = addToDateTable(db, day, false);
+            long dayOfWeekId = addToDateTable(db, dayOfWeek, false);
             int dayOfMonth = AddTaskFragment.getDayOfMonth(day, Constants.DATEFORMAT);
 
             ArrayList<Long> tasksIdList =  getTasksListFromRepeatingTable(db, dayID, dayOfWeekId, dayOfMonth);
@@ -1253,7 +1278,7 @@ cursor.close();
     {
 
         try {
-            long dayId = addToDateTable(db, day);
+            long dayId = addToDateTable(db, day, false);
 
             // -1 means that day is absent in dayTable, thats why there are no one tasks for this day. That's why it returns empty object
             if (dayId==-1)
@@ -1440,7 +1465,6 @@ cursor.close();
 
     public static String getRemindTimeForTaskId(SQLiteDatabase db, String taskId)
     {
-
         Cursor cursor = db.query ("Reminding",
                 new String[] {"TIME"},
                 "TASK_ID = ?",
@@ -1452,7 +1476,6 @@ cursor.close();
             cursor.close();
             return time;
         }
-
 
         else
             return "-1";
@@ -1655,14 +1678,14 @@ cursor.close();
     {
         try {
             long dayID = getDayFromString(db, day);
-            addToDeletedTasks(db, taskId, dayID);
+            addToDeletedTasks(db, taskId, dayID, false);
         }
         catch (Exception e){return false;}
 
         return true;
     }
 
-    public static long addToDeletedTasks(SQLiteDatabase db, long taskId, long dayId)
+    public static long addToDeletedTasks(SQLiteDatabase db, long taskId, long dayId, boolean isSynchronization)
     {
         ContentValues value = new ContentValues();
         value.put("TASK_ID", taskId);
@@ -1670,14 +1693,15 @@ cursor.close();
         long id = db.insert("DeletedTask", null, value);
         value.clear();
 
+        if (!isSynchronization)
         DBSynchronizer.addToSyncTable(db, id, Constants.dbTables.get(Constants.DELETED_TASKS_TABLE));
         return id;
     }
 
-    public static boolean deleteTaskFromAllDays(SQLiteDatabase db, String taskId, String day, Context context) {
+    public static boolean deleteTaskFromAllDays(SQLiteDatabase db, String taskId, String day, Context context, boolean isSynchronization) {
 
         try {
-            long dayToId = addToDateTable(db, day);
+            long dayToId = addToDateTable(db, day, isSynchronization);
             ContentValues value = new ContentValues();
             value.put("DAY_TO_ID", dayToId);
             int updCount = db.update("TaskLifecycle", value, "TASK_ID = ?",
@@ -1690,7 +1714,10 @@ cursor.close();
             ManagerNotifications.cancelNotifications(db, taskId, context);
 
             long taskLifecycleId = getTaskLifecycleId(db, taskId);
+
+            if (!isSynchronization)
             DBSynchronizer.addToSyncTable(db, taskLifecycleId, Constants.dbTables.get(Constants.TASK_LIFECYCLE_TABLE));
+
             deleteNotifications(db, taskId);
         }
 
@@ -1852,8 +1879,8 @@ cursor.close();
     public static Notification getNotificationWithLocalIds(SQLiteDatabase db, long id) {
         Notification notification = new Notification();
 
-        Cursor cursor = db.query("MonthRepeating",
-                new String[]{"TASK_ID"},
+        Cursor cursor = db.query("Notification",
+                new String[]{"TASK_ID", "DAY_ID"},
                 "_id = ?",
                 new String[]{id+""},
                 null, null, null);
@@ -1982,13 +2009,43 @@ cursor.close();
     {
         boolean result = false;
         Cursor cursor = db.query("Adapter",
-                new String[]{"TABLE_ID", "SID"},
-                "_id = ?",
+                new String[]{"_id"},
+                "TABLE_ID = ? AND SID = ?",
                 new String[]{tableId+"", sid+""},
                 null, null, null);
 
         if (cursor.moveToFirst())
            result = true;
+
+        cursor.close();
+        return result;
+    }
+
+    public static boolean isExistInAdapterByLocalId(SQLiteDatabase db, long lid, int tableId) {
+        boolean result = false;
+        Cursor cursor = db.query("Adapter",
+                new String[]{"_id"},
+                "TABLE_ID = ? AND LOCAL_ID = ?",
+                new String[]{tableId+"", lid+""},
+                null, null, null);
+
+        if (cursor.moveToFirst())
+            result = true;
+
+        cursor.close();
+        return result;
+    }
+
+    public static boolean isExistInProgressGoal(SQLiteDatabase db, long goalLid) {
+        boolean result = false;
+        Cursor cursor = db.query("InProgressGoal",
+                new String[]{"_id"},
+                "GOAL_ID = ?",
+                new String[]{goalLid+""},
+                null, null, null);
+
+        if (cursor.moveToFirst())
+            result = true;
 
         cursor.close();
         return result;

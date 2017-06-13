@@ -39,7 +39,7 @@ public class ManagerNotifications {
     public static boolean createNotifications(SQLiteDatabase readableDb, Context context, String taskId) {
 
         try {
-            System.out.println(taskId);
+
               /* key 0 belongs to reminding about every day planning */
             if ("0".equals(taskId))
             {
@@ -123,13 +123,12 @@ public class ManagerNotifications {
     }
 
     private static int getPendingId(SQLiteDatabase readableDb, String day, String taskId) {
-        long dayId = DBHelper.addToDateTable(readableDb, day);
+        long dayId = DBHelper.addToDateTable(readableDb, day, false);
         long pendingId = DBHelper.getNotificationId(readableDb, taskId, dayId+"");
 
         if (pendingId==-1)
-            pendingId = DBHelper.addNotification(readableDb, taskId, day);
+            pendingId = DBHelper.addNotification(readableDb, taskId, day, false);
 
-        System.out.println(pendingId + " pendingID");
         return (int) pendingId;
     }
 
@@ -342,6 +341,7 @@ public class ManagerNotifications {
         /* get info from preferences*/
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
         String strRingtonePreference = preference.getString(Constants.PREF_RINGTONE, "DEFAULT_SOUND");
+        System.out.println("song " + strRingtonePreference);
         Uri alarmSound = Uri.parse(strRingtonePreference);
         builder.setSound(alarmSound);
        boolean isSetVibration = preference.getBoolean(Constants.PREF_VIBRATION, false);

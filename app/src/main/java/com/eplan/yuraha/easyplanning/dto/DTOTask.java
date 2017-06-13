@@ -10,6 +10,7 @@ public class DTOTask {
     private long sid;
     private String taskText;
     private int priority;
+    private long localId;
 
     public DTOTask() {
     }
@@ -44,12 +45,45 @@ public class DTOTask {
         this.priority = priority;
     }
 
+
     @Override
     public String toString() {
         return "DTOTask{" +
                 "sid=" + sid +
                 ", taskText='" + taskText + '\'' +
                 ", priority=" + priority +
+                ", localId=" + localId +
                 '}';
+    }
+
+    public long getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(long localId) {
+        this.localId = localId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DTOTask dtoTask = (DTOTask) o;
+
+        if (sid != dtoTask.sid) return false;
+        if (priority != dtoTask.priority) return false;
+        if (localId != dtoTask.localId) return false;
+        return taskText != null ? taskText.equals(dtoTask.taskText) : dtoTask.taskText == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (sid ^ (sid >>> 32));
+        result = 31 * result + (taskText != null ? taskText.hashCode() : 0);
+        result = 31 * result + priority;
+        result = 31 * result + (int) (localId ^ (localId >>> 32));
+        return result;
     }
 }
